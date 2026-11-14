@@ -338,46 +338,113 @@ export default function AssistantPage() {
 
   /* ─────────────── STT (Speech-to-Text) ─────────────── */
 
-  const toggleRecording = useCallback(() => {
+  const toggleRecording = useCallback(async () => {
     if (isRecording) {
-      recognitionRef.current?.stop();
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {
+          console.warn("Error stopping recognition:", e);
+        }
+      }
       setIsRecording(false);
       return;
     }
 
     const SpeechRecognition =
-      (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
     if (!SpeechRecognition) {
-      setError("Speech recognition is not supported in this browser.");
+      setError(
+        "Speech recognition is not supported in this browser. Please use Google Chrome, Microsoft Edge, or Safari."
+      );
       return;
     }
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = LANGUAGES.find((l) => l.code === language)?.sttTag || "en-IN";
-    recognition.interimResults = true;
-    recognition.continuous = false;
+    setError(null);
 
-    recognition.onresult = (event: any) => {
-      let transcript = "";
-      for (let i = 0; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript;
+    // Request microphone permission explicitly first to ensure browser prompt appears
+    if (navigator.mediaDevices?.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Stop audio tracks immediately once permission is verified so speech engine can access mic
+        stream.getTracks().forEach((track) => track.stop());
+      } catch (permErr: any) {
+        if (permErr.name === "NotAllowedError" || permErr.name === "PermissionDeniedError") {
+          setError(
+            "Microphone permission denied. Please click the lock/settings icon in your browser address bar and allow microphone access."
+          );
+        } else if (permErr.name === "NotFoundError" || permErr.name === "DevicesNotFoundError") {
+          setError("No microphone found. Please connect a microphone to your device.");
+        } else {
+          setError(`Microphone error: ${permErr.message || "Unable to access microphone"}`);
+        }
+        setIsRecording(false);
+        return;
       }
-      setInputText(transcript);
-    };
+    }
 
-    recognition.onerror = (event: any) => {
-      console.error("Speech recognition error:", event.error);
+    try {
+      const recognition = new SpeechRecognition();
+      const currentLangConfig = LANGUAGES.find((l) => l.code === language);
+      recognition.lang = currentLangConfig?.sttTag || "en-IN";
+      recognition.interimResults = true;
+      recognition.continuous = true;
+      recognition.maxAlternatives = 1;
+
+      // Keep base text if already present in input
+      const initialText = inputText.trim();
+
+      recognition.onstart = () => {
+        setIsRecording(true);
+        setError(null);
+      };
+
+      recognition.onresult = (event: any) => {
+        let fullTranscript = "";
+        for (let i = 0; i < event.results.length; i++) {
+          fullTranscript += event.results[i][0].transcript;
+        }
+        if (fullTranscript) {
+          const separator = initialText.length > 0 ? " " : "";
+          setInputText(initialText ? `${initialText}${separator}${fullTranscript}` : fullTranscript);
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        console.warn("Speech recognition error:", event.error);
+        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+          setError(
+            "Microphone permission was denied. Please allow microphone access in your browser address bar."
+          );
+        } else if (event.error === "network") {
+          setError(
+            "Speech recognition network error: The browser's speech service requires an active internet connection."
+          );
+        } else if (event.error === "audio-capture") {
+          setError("No microphone was detected. Please check your audio input device.");
+        } else if (event.error === "language-not-supported") {
+          setError(
+            `Voice recognition for '${currentLangConfig?.label || language}' is not installed in this browser. Try English.`
+          );
+        } else if (event.error !== "no-speech") {
+          setError(`Voice input error (${event.error}). Please try again.`);
+        }
+        setIsRecording(false);
+      };
+
+      recognition.onend = () => {
+        setIsRecording(false);
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (startErr: any) {
+      console.error("Failed to start speech recognition:", startErr);
+      setError("Failed to start voice recognition. Please try clicking the microphone again.");
       setIsRecording(false);
-    };
-
-    recognition.onend = () => {
-      setIsRecording(false);
-    };
-
-    recognitionRef.current = recognition;
-    recognition.start();
-    setIsRecording(true);
-  }, [isRecording, language]);
+    }
+  }, [isRecording, language, inputText]);
 
   /* ─────────────── TTS (Text-to-Speech) ─────────────── */
 
@@ -836,10 +903,37 @@ export default function AssistantPage() {
             className="p-3 sm:p-4 border-t border-zinc-800 bg-zinc-950/80 shrink-0"
             style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
           >
+            {isRecording && (
+              <div className="text-xs text-red-300 bg-red-950/40 border border-red-800/60 rounded-xl px-3 py-2 mb-2 flex items-center justify-between gap-2 animate-pulse">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                  <span>
+                    Listening in <strong>{currentLang.label}</strong>... Speak into your microphone.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={toggleRecording}
+                  className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-red-900/60 hover:bg-red-800 text-white font-semibold transition"
+                >
+                  Done Speaking
+                </button>
+              </div>
+            )}
+
             {error && (
-              <div className="text-xs text-red-400 flex items-center gap-1.5 px-1 mb-2">
-                <AlertTriangle className="w-3.5 h-3.5" />
-                <span>{error}</span>
+              <div className="text-xs text-red-400 bg-red-950/30 border border-red-900/40 rounded-xl px-3 py-2 mb-2 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-red-400" />
+                  <span className="truncate">{error}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setError(null)}
+                  className="text-[10px] text-zinc-400 hover:text-white px-1"
+                >
+                  ✕
+                </button>
               </div>
             )}
 

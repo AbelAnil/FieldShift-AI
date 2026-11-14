@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import OfflineBanner from "@/components/OfflineBanner";
 import { AuthProvider } from "@/context/AuthContext";
 import { UIProvider } from "@/context/UIContext";
@@ -27,8 +28,9 @@ export default function RootLayout({
               <div className="flex-1 flex flex-col min-w-0 w-full">
                 <OfflineBanner />
                 <Header />
-                <main className="flex-1 p-3.5 sm:p-6 lg:p-8 overflow-y-auto w-full max-w-full">{children}</main>
+                <main className="flex-1 p-3.5 sm:p-6 lg:p-8 pb-20 md:pb-8 overflow-y-auto w-full max-w-full">{children}</main>
               </div>
+              <MobileBottomNav />
             </div>
           </UIProvider>
         </AuthProvider>

@@ -35,6 +35,8 @@ NASA Earth Data → Environmental Analysis → Farm Digital Twin → Crop Suitab
 ### 🗺️ Farm Registration & Interactive Maps
 
 - **Interactive polygon drawing** on MapLibre GL JS for field boundary delineation
+- **Live location search bar & geocoding:** Real-time search with OpenStreetMap / Nominatim autocomplete to quickly locate and fly to any farm, town, or coordinate worldwide
+- **Global agricultural region presets:** One-click navigation to key farming regions (Kerala, Iowa Corn Belt, Cerrado, Pampas, Rift Valley, Andalucia, Punjab, Wayanad)
 - **WGS84 geodesic area calculation** for accurate field sizing
 - **Multi-tenant JWT authentication** with per-user data isolation (HTTP 403 cross-tenant protection)
 - Multi-farm support — register and switch between multiple fields
@@ -171,11 +173,13 @@ A conversational farm advisor powered by deterministic tool-calling against live
 
 ### 📱 Mobile-First Responsive UI
 
-- Fully responsive across desktop and phone screens
-- Collapsible session sidebar → mobile slide-over drawer
-- 44px minimum touch targets for all interactive elements
-- Mobile keyboard safe-area padding (`env(safe-area-inset-bottom)`)
-- Touch-friendly quick topic chips and voice input
+- **Full responsive design** optimized across desktop, tablet, and mobile displays
+- **Native animated slide-out drawer** for complete platform navigation with backdrop blur and gesture dismissal
+- **Persistent mobile bottom navigation bar (`MobileBottomNav`):** One-tap thumb access to primary workflows (Overview, My Farms, Earth Intel, AI Assistant, and More drawer)
+- **Adaptive map viewports:** Height-scaled MapLibre containers (`h-[400px]` on mobile to `h-[540px]` on desktop) with responsive top search inputs and touch-friendly polygon drawing toolbars
+- 44px minimum touch targets for all interactive controls, buttons, and form selectors
+- Mobile keyboard safe-area padding (`env(safe-area-inset-bottom)` and `pb-20` main scroll clearance)
+- Touch-friendly quick topic chips, audio playback controls, and voice recording buttons
 
 ---
 

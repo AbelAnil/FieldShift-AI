@@ -101,17 +101,24 @@ export default function Sidebar() {
       </aside>
 
       {/* ─── Mobile Slide-out Drawer ─── */}
-      {isMobileSidebarOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
-          {/* Backdrop overlay */}
-          <div
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
-            onClick={closeMobileSidebar}
-            aria-label="Close navigation"
-          />
+      <div
+        className={`fixed inset-0 z-50 md:hidden transition-opacity duration-200 ${
+          isMobileSidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        {/* Backdrop overlay */}
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+          onClick={closeMobileSidebar}
+          aria-label="Close navigation"
+        />
 
-          {/* Drawer container */}
-          <aside className="fixed inset-y-0 left-0 w-72 max-w-[85vw] bg-zinc-950 border-r border-zinc-800/80 flex flex-col z-50 text-zinc-300 shadow-2xl animate-in slide-in-from-left duration-200">
+        {/* Drawer container */}
+        <aside
+          className={`fixed inset-y-0 left-0 w-72 max-w-[85vw] bg-zinc-950 border-r border-zinc-800/80 flex flex-col z-50 text-zinc-300 shadow-2xl transition-transform duration-200 ease-out ${
+            isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
             {/* Mobile Brand Header + Close button */}
             <div className="p-4 border-b border-zinc-800/80 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -138,8 +145,7 @@ export default function Sidebar() {
             {renderNavLinks()}
             {renderPilotBadge()}
           </aside>
-        </div>
-      )}
+      </div>
     </>
   );
 }

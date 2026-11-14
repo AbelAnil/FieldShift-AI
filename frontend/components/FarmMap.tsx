@@ -8,7 +8,7 @@ import { Farm, validateGeoJSON } from "@/lib/api";
 if (typeof window !== "undefined") {
   maplibregl.setWorkerUrl("/maplibre-gl-worker.mjs");
 }
-import { MapPin, Navigation, Compass, Layers, Check, RefreshCw, Undo2, Trash2, MousePointerClick } from "lucide-react";
+import { MapPin, Navigation, Compass, Layers, Check, RefreshCw, Undo2, Trash2, MousePointerClick, Search, X as XIcon, Loader2 } from "lucide-react";
 
 interface FarmMapProps {
   farms: Farm[];
@@ -63,6 +63,57 @@ export default function FarmMap({
   const [calculatedArea, setCalculatedArea] = useState<{ ha: number; ac: number } | null>(null);
   const [previewArea, setPreviewArea] = useState<{ ha: number; ac: number } | null>(null);
 
+  // ── Geocoding search state ──
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<{ display_name: string; lat: string; lon: string }[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const handleSearchInput = (q: string) => {
+    setSearchQuery(q);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    if (!q.trim()) {
+      setSearchResults([]);
+      setSearchOpen(false);
+      return;
+    }
+    searchDebounceRef.current = setTimeout(async () => {
+      setSearchLoading(true);
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&addressdetails=0`;
+        const res = await fetch(url, { headers: { "Accept-Language": "en" } });
+        const data = await res.json();
+        setSearchResults(data);
+        setSearchOpen(data.length > 0);
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 400);
+  };
+
+  const handleSearchSelect = (result: { display_name: string; lat: string; lon: string }) => {
+    if (!map.current) return;
+    map.current.flyTo({
+      center: [parseFloat(result.lon), parseFloat(result.lat)],
+      zoom: 14,
+      speed: 1.4,
+    });
+    setSearchQuery(result.display_name.split(",").slice(0, 2).join(", "));
+    setSearchResults([]);
+    setSearchOpen(false);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+    setSearchResults([]);
+    setSearchOpen(false);
+    searchInputRef.current?.focus();
+  };
+
   // Sync refs for event listeners
   drawingPointsRef.current = drawingPoints;
   mousePosRef.current = mousePos;
@@ -74,8 +125,8 @@ export default function FarmMap({
     const initialCenter: [number, number] = selectedFarm
       ? [selectedFarm.longitude, selectedFarm.latitude]
       : farms.length > 0
-      ? [farms[0].longitude, farms[0].latitude]
-      : [76.7865, 9.5542]; // Kanjirappally default
+        ? [farms[0].longitude, farms[0].latitude]
+        : [76.7865, 9.5542]; // Kanjirappally default
 
     const mapInstance = new maplibregl.Map({
       container: mapContainer.current,
@@ -629,55 +680,91 @@ export default function FarmMap({
   };
 
   return (
-    <div className="relative w-full h-[540px] rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950 shadow-inner">
+    <div className="relative w-full h-[400px] sm:h-[480px] md:h-[540px] rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950 shadow-inner">
       {/* MapLibre Canvas */}
       <div ref={mapContainer} className="w-full h-full" />
 
       {/* Top Banner: Drawing Mode Guidance Bar */}
       {isDrawingMode && (
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2.5 px-4 py-2 rounded-xl bg-zinc-950/90 backdrop-blur border border-emerald-500/50 shadow-2xl text-xs text-white">
-          <span className="relative flex h-2.5 w-2.5">
+        <div className="absolute top-14 sm:top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-950/90 backdrop-blur border border-emerald-500/50 shadow-2xl text-xs text-white max-w-[90vw]">
+          <span className="relative flex h-2.5 w-2.5 shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
           </span>
-          <span className="font-semibold text-emerald-400">Polygon Drawing:</span>
+          <span className="font-semibold text-emerald-400 shrink-0">Drawing:</span>
           <span className="text-zinc-300 hidden sm:inline">
             Click map to place boundary vertices. Rubberband lines & preview area appear in real-time.
           </span>
-          <span className="text-zinc-300 sm:hidden">Click map to add boundary points.</span>
-          <span className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-700 text-[11px] font-mono text-emerald-300">
-            {drawingPoints.length} {drawingPoints.length === 1 ? "vertex" : "vertices"}
+          <span className="text-zinc-300 sm:hidden text-[11px]">Tap map to add boundary points.</span>
+          <span className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-700 text-[11px] font-mono text-emerald-300 shrink-0">
+            {drawingPoints.length} {drawingPoints.length === 1 ? "pt" : "pts"}
           </span>
         </div>
       )}
 
-      {/* Global Agricultural Region Presets & Coordinate Jump */}
-      <div className="absolute top-3 left-3 z-10 flex flex-wrap items-center gap-1.5 bg-zinc-900/95 backdrop-blur p-1.5 rounded-xl border border-zinc-800 shadow-md text-xs">
-        <span className="text-[10px] uppercase font-bold text-zinc-400 px-1.5 py-1 flex items-center gap-1">
-          <Compass className="w-3.5 h-3.5 text-emerald-400" />
-          <span className="hidden sm:inline">Global Regions:</span>
-        </span>
-        <select
-          onChange={(e) => {
-            const idx = parseInt(e.target.value, 10);
-            if (!isNaN(idx) && GLOBAL_PRESETS[idx]) {
-              flyToPreset(GLOBAL_PRESETS[idx].coords, GLOBAL_PRESETS[idx].zoom);
-            }
-          }}
-          defaultValue="0"
-          className="bg-zinc-800 text-zinc-200 text-xs px-2.5 py-1 rounded-lg border border-zinc-700 font-medium focus:outline-none cursor-pointer"
-        >
-          {GLOBAL_PRESETS.map((preset, idx) => (
-            <option key={preset.name} value={idx}>
-              {preset.name}
-            </option>
-          ))}
-        </select>
+      {/* ── Map Search Bar + Region Presets ── */}
+      <div className="absolute top-3 left-3 right-14 z-10 flex flex-col gap-1.5 max-w-xs sm:max-w-sm">
+        {/* Geocoding Search Input */}
+        <div className="relative flex items-center gap-1.5 bg-zinc-900/95 backdrop-blur rounded-xl border border-zinc-700 shadow-md px-2.5 py-1.5">
+          <Search className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+          <input
+            ref={searchInputRef}
+            type="text"
+            value={searchQuery}
+            onChange={(e) => handleSearchInput(e.target.value)}
+            onFocus={() => searchResults.length > 0 && setSearchOpen(true)}
+            placeholder="Search location…"
+            className="flex-1 bg-transparent text-xs text-zinc-200 placeholder:text-zinc-500 focus:outline-none min-w-0"
+          />
+          {searchLoading && <Loader2 className="w-3.5 h-3.5 text-emerald-400 animate-spin shrink-0" />}
+          {searchQuery && !searchLoading && (
+            <button onClick={clearSearch} className="text-zinc-500 hover:text-zinc-200 shrink-0 transition">
+              <XIcon className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
+        {/* Autocomplete Dropdown */}
+        {searchOpen && searchResults.length > 0 && (
+          <div className="bg-zinc-900/98 backdrop-blur border border-zinc-700 rounded-xl shadow-xl overflow-hidden">
+            {searchResults.map((r, i) => (
+              <button
+                key={i}
+                onClick={() => handleSearchSelect(r)}
+                className="w-full text-left px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-800 hover:text-white transition flex items-start gap-2 border-b border-zinc-800/60 last:border-0"
+              >
+                <MapPin className="w-3 h-3 text-emerald-400 shrink-0 mt-0.5" />
+                <span className="line-clamp-2">{r.display_name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Region Presets */}
+        <div className="flex items-center gap-1.5 bg-zinc-900/90 backdrop-blur rounded-xl border border-zinc-800 shadow px-2 py-1">
+          <Compass className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+          <select
+            onChange={(e) => {
+              const idx = parseInt(e.target.value, 10);
+              if (!isNaN(idx) && GLOBAL_PRESETS[idx]) {
+                flyToPreset(GLOBAL_PRESETS[idx].coords, GLOBAL_PRESETS[idx].zoom);
+              }
+            }}
+            defaultValue="0"
+            className="bg-transparent text-zinc-300 text-[11px] font-medium focus:outline-none cursor-pointer flex-1 min-w-0"
+          >
+            {GLOBAL_PRESETS.map((preset, idx) => (
+              <option key={preset.name} value={idx} className="bg-zinc-900 text-zinc-200">
+                {preset.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Drawing Toolbar Overlay */}
       {isDrawingMode && (
-        <div className="absolute bottom-4 left-4 z-20 bg-zinc-900/95 backdrop-blur p-4 rounded-2xl border border-emerald-500/50 shadow-2xl max-w-sm w-full space-y-3.5">
+        <div className="absolute bottom-4 left-3 right-3 sm:left-4 sm:right-auto z-20 bg-zinc-900/95 backdrop-blur p-3.5 rounded-2xl border border-emerald-500/50 shadow-2xl sm:max-w-sm w-auto space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -710,8 +797,8 @@ export default function FarmMap({
                   {drawingPoints.length === 0
                     ? "Click any location on map to start"
                     : drawingPoints.length === 1
-                    ? "Click 2nd point to draw first boundary edge"
-                    : "Click 3rd point to enclose polygon area"}
+                      ? "Click 2nd point to draw first boundary edge"
+                      : "Click 3rd point to enclose polygon area"}
                 </span>
               )}
             </div>
@@ -734,11 +821,10 @@ export default function FarmMap({
             <button
               onClick={() => finishDrawing()}
               disabled={drawingPoints.length < 3}
-              className={`flex-1 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-sm ${
-                drawingPoints.length >= 3
+              className={`flex-1 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-sm ${drawingPoints.length >= 3
                   ? "bg-emerald-500 hover:bg-emerald-400 text-zinc-950 shadow-emerald-950/50"
                   : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
-              }`}
+                }`}
             >
               <Check className="w-4 h-4" />
               <span>Save Boundary</span>

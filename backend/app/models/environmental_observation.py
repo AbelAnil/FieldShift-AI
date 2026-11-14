@@ -22,3 +22,4 @@ class EnvironmentalObservation(Base):
     data_class = Column(String(50), default="satellite", nullable=False)  # satellite, modelled, measured, forecast
 
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+

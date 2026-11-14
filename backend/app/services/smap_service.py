@@ -33,3 +33,4 @@ class SMAPService:
                 "probe measurement in an individual 1-hectare field."
             ),
         }
+

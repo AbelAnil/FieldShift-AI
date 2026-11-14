@@ -126,3 +126,4 @@ class VegetationService:
             "moisture_status": moisture,
             "interpretation": f"{vigor} with {moisture.lower()}."
         }
+

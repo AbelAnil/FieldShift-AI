@@ -20,3 +20,4 @@ class VegetationObservation(Base):
     quality_metadata = Column(Text, nullable=True)
 
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+

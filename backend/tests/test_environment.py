@@ -69,3 +69,4 @@ def test_earth_observation_endpoints():
 if __name__ == "__main__":
     test_earth_observation_endpoints()
     print("ALL EARTH OBSERVATION TESTS PASSED SUCCESSFULLY!")
+

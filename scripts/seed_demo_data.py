@@ -5,9 +5,10 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
 from app.database import SessionLocal, engine, Base
-from app.models import User, Farm, Field, DataSource, EnvironmentalObservation, VegetationObservation
+from app.models import User, Farm, Field, DataSource, EnvironmentalObservation, VegetationObservation, Crop
 from app.core.security import get_password_hash
 from app.utils.geo import validate_and_process_geojson
+from app.services.crop_service import CropService
 
 
 def seed_data():
@@ -15,6 +16,8 @@ def seed_data():
     db = SessionLocal()
 
     try:
+        # Seed Crops database
+        CropService.seed_crops_if_empty(db)
         # Seed Data Sources registry
         data_sources_list = [
             {

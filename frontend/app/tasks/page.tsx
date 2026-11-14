@@ -152,12 +152,12 @@ export default function TasksPage() {
           <p className="text-sm text-zinc-400">Condition-based farm suggestions and farmer-approved activity checklists.</p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           {farms.length > 0 && (
             <select
               value={selectedFarm?.id || ""}
               onChange={(e) => handleSelectFarm(e.target.value)}
-              className="bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-emerald-500 font-medium cursor-pointer"
+              className="flex-1 sm:flex-none bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-emerald-500 font-medium cursor-pointer min-w-0"
             >
               {farms.map((f) => (
                 <option key={f.id} value={f.id}>
@@ -170,10 +170,10 @@ export default function TasksPage() {
           <button
             onClick={() => selectedFarm && loadTasks(selectedFarm.id, token, true)}
             disabled={isSyncing || !selectedFarm}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-200 text-xs font-semibold transition"
+            className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-200 text-xs font-semibold transition"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-emerald-400 ${isSyncing ? "animate-spin" : ""}`} />
-            <span>Sync Telemetry</span>
+            <span className="hidden sm:inline">Sync Telemetry</span>
           </button>
 
           <button
@@ -229,15 +229,15 @@ export default function TasksPage() {
       </div>
 
       {/* Filters Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-zinc-900/30 border border-zinc-800/80">
-        <div className="flex items-center gap-2">
-          <Filter className="w-3.5 h-3.5 text-zinc-500" />
-          <span className="text-xs text-zinc-400 font-medium">Status:</span>
+      <div className="flex flex-col gap-2.5 p-3.5 rounded-2xl bg-zinc-900/30 border border-zinc-800/80">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
+          <Filter className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+          <span className="text-xs text-zinc-400 font-medium shrink-0">Status:</span>
           {["all", "pending", "completed", "dismissed"].map((s) => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1 rounded-xl text-xs font-medium capitalize transition ${
+              className={`shrink-0 px-3 py-1 rounded-xl text-xs font-medium capitalize transition ${
                 statusFilter === s
                   ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
                   : "bg-zinc-900 text-zinc-400 hover:text-zinc-200 border border-zinc-800"
@@ -248,13 +248,13 @@ export default function TasksPage() {
           ))}
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-zinc-400 font-medium">Category:</span>
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
+          <span className="text-xs text-zinc-400 font-medium shrink-0">Category:</span>
           {["all", "soil", "drainage", "crop", "weather"].map((c) => (
             <button
               key={c}
               onClick={() => setCategoryFilter(c)}
-              className={`px-3 py-1 rounded-xl text-xs font-medium capitalize transition ${
+              className={`shrink-0 px-3 py-1 rounded-xl text-xs font-medium capitalize transition ${
                 categoryFilter === c
                   ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
                   : "bg-zinc-900 text-zinc-400 hover:text-zinc-200 border border-zinc-800"
@@ -412,8 +412,8 @@ export default function TasksPage() {
 
       {/* Modal: New Custom Farm Task */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
               <h3 className="font-bold text-white text-base">Add New Farm Task</h3>
               <button

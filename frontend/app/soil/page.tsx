@@ -106,13 +106,13 @@ export default function SoilIntelligencePage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-1.5 text-xs">
-            <MapPin className="w-4 h-4 text-emerald-400" />
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
+          <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-1.5 text-xs flex-1 sm:flex-initial">
+            <MapPin className="w-4 h-4 text-emerald-400 shrink-0" />
             <select
               value={selectedFarm?.id || ""}
               onChange={handleFarmChange}
-              className="bg-transparent text-zinc-100 font-medium focus:outline-none cursor-pointer"
+              className="bg-transparent text-zinc-100 font-medium focus:outline-none cursor-pointer w-full"
             >
               {farms.map((f) => (
                 <option key={f.id} value={f.id} className="bg-zinc-900 text-zinc-200">
@@ -124,7 +124,7 @@ export default function SoilIntelligencePage() {
 
           <button
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold text-xs transition shadow-lg shadow-emerald-950"
+            className="inline-flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold text-xs transition shadow-lg shadow-emerald-950 shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>Enter Lab Soil Test</span>
@@ -275,10 +275,10 @@ export default function SoilIntelligencePage() {
 
       {/* Modal: Lab Soil Test Entry */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-3xl bg-zinc-900 border border-zinc-800 p-6 space-y-4 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-3xl bg-zinc-900 border border-zinc-800 p-4 sm:p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-              <h3 className="font-bold text-lg text-white">Record Laboratory Soil Test</h3>
+              <h3 className="font-bold text-base sm:text-lg text-white">Record Laboratory Soil Test</h3>
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800"
@@ -288,7 +288,7 @@ export default function SoilIntelligencePage() {
             </div>
 
             <form onSubmit={handleSubmitLabTest} className="space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-zinc-400 mb-1 font-medium">Soil pH (H2O) *</label>
                   <input
@@ -318,7 +318,7 @@ export default function SoilIntelligencePage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-zinc-400 mb-1 font-medium">Available N (kg/ha)</label>
                   <input

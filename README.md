@@ -25,7 +25,7 @@ NASA Earth Data → Environmental Analysis → Farm Digital Twin → Crop Suitab
 | **Phase 7** | AI Farm Assistant | ✅ Complete | Multilingual conversational advisor with STT/TTS, topic sessions, KAU/ICAR tool-calling |
 | **Phase 8** | Tasks & Decision Dossiers | ✅ Complete | Condition-based alert engine, interactive task manager, printable markdown farm dossiers |
 | **Phase 9** | Carbon Credit Module | ✅ Complete | Eligibility screener, conservative yield model, evidence ledger, FPO aggregator packs |
-| **Phase 10** | Integrated Farming System (IFS) | 🚀 Specified | Livestock (THI index), Farm Pond Fish, Rice-Duck/Poultry, and Beekeeping (+25% pollination) |
+| **Phase 10** | Integrated Farming System (IFS) | ✅ Complete | Livestock (THI heat gauge), Farm Pond Sizer, Rice-Duck/Poultry, Apiculture (+28% pollination), Bio-Resource Loop |
 | **Phase 11** | Deployment & Edge Readiness | 🚀 Ready | Local-first architecture, SQLite default / PostgreSQL-ready, Raspberry Pi edge evaluation |
 
 ---
@@ -145,23 +145,29 @@ A conversational farm advisor powered by deterministic tool-calling against live
 - Evidence ledger tracking for audit readiness
 - **FPO (Farmer Producer Organization) aggregation packs** for smallholders (1–3 acres) who need collective pooling
 
-### 🐄 Integrated Farming System (IFS) — Livestock, Aquaculture & Beekeeping
+### 🐄 Integrated Farming System (IFS) — Livestock, Aquaculture & Beekeeping (`/integrated-farming`)
 
+- **Interactive Circular Bio-Resource Matrix:**
+  - 5-node interconnected model (Crops, Dairy & Biogas, Farm Pond, Poultry & Ducks, Apiculture) showcasing zero-waste nutrient recycling.
+  - Computes synthetic N-P-K chemical fertilizer displaced (60–80% offset) and net annual rupees saved (₹18,000–₹45,000+/year).
+  - Quantifies annual Soil Organic Carbon (SOC) accumulation (+0.22%/ha/yr) from continuous microbial digestion.
 - **Dairy & Cattle Husbandry Engine:**
   - Manure-to-biogas bio-slurry loop yielding 3.5–4.5 tons of Farm Yard Manure (FYM)/year per cow, displacing 60–80% of synthetic NPK.
-  - **NASA POWER Livestock Heat Stress Monitor (THI):** Real-time Temperature-Humidity Index calculation alerting farmers to heat stress ($THI \ge 74$) to protect milk yield and animal welfare.
-  - Bund fodder grass sizing (Hybrid Napier CO-5) along boundaries without consuming arable food crop acreage.
-- **Farm Pond Rainwater Catchment & Aquaculture:**
-  - Sizes rainwater retention basins using live NASA GPM IMERG 30-day precipitation (>1.4 million liters harvested per 2 acres).
-  - Species modeling: Composite Carp culture (Catla, Rohu, Mrigal), Pearlspot (*Karimeen*), and GIFT Tilapia.
+  - **NASA POWER Livestock Heat Stress Monitor (THI):** Real-time Temperature-Humidity Index calculation ($THI = 0.8T + (RH/100)(T - 14.4) + 46.4$) with live comfort gauge, milk yield risk alerts, and automated barn ventilation/fogger advisories.
+  - Bund fodder grass sizing (Hybrid Napier CO-5) along perimeter boundaries without consuming arable food crop acreage.
+- **Farm Pond Rainwater Catchment & Aquaculture Sizer:**
+  - Dynamic what-if slider sizing rainwater retention basins against live NASA GPM IMERG 30-day precipitation (>1.4 million liters harvested per 2 acres).
+  - Species modeling: Composite Carp culture (Catla 30%, Rohu 40%, Mrigal 30%), Pearlspot (*Karimeen*), and GIFT Tilapia.
+  - Emergency drought-irrigation buffer days calculation and annual pond bottom silt/sludge top-dressing recycling.
   - Pokkali organic rice-fish/prawn rotation modeling for floodplains and coastal wetlands.
 - **Poultry & Duck Mutualism:**
-  - Rice-Duck biological pest control: ducks feed on brown planthoppers, leaf folders, and weeds while aerating root water.
-  - Deep-litter poultry manure providing high-phosphorus organic top-dressing for banana and black pepper.
+  - Rice-Duck biological pest control: ducks feed voraciously on brown planthoppers, leaf folders, and weeds while aerating root water.
+  - Deep-litter poultry manure providing high-phosphorus organic top-dressing for banana and black pepper vines.
 - **Apiculture (Bee Farming) & Pollination Synergy:**
-  - Indian Honey Bee (*Apis cerana*) and Stingless Bee (*Tetragonula iridipennis* / *Cheruthen*).
+  - Indian Honey Bee (*Apis cerana indica*) and Stingless Bee (*Tetragonula iridipennis* / *Cheruthen*).
   - Cross-pollination multiplier: **+20% to +35% fruit/seed set** on nutmeg, cashew, coffee, coconut, and vegetables.
-  - High-value medicinal honey revenue modeling (₹1,500–₹2,500/kg).
+  - High-value medicinal honey revenue modeling (₹1,500–₹2,500/kg) and seasonal floral dearth calendar tracking.
+- **Direct Asset Intake:** Modal allowing farmers to register new livestock, poultry, farm ponds, and beehives directly into the database.
 
 ### 📱 Mobile-First Responsive UI
 
@@ -176,22 +182,22 @@ A conversational farm advisor powered by deterministic tool-calling against live
 ## 🏗️ Architecture & Technology Stack
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Next.js 16 Frontend                  │
-│  App Router · TypeScript · Tailwind CSS · MapLibre GL   │
-│  Lucide Icons · Recharts · Web Speech API (STT/TTS)     │
-├─────────────────────────────────────────────────────────┤
-│                    FastAPI Backend                       │
-│  Python 3.11 · Pydantic v2 · SQLAlchemy ORM · Uvicorn   │
-├───────┬───────┬───────┬───────┬───────┬─────────────────┤
-│  NASA │ Soil  │ Crop  │ AI    │ Carbon│  Digital Twin   │
-│  GPM  │ Grids │ Engine│ Asst. │ Credit│  Simulator      │
-│ POWER │ Lab   │ Rotn. │ IPM   │ FPO   │  What-If        │
-│ SMAP  │ Tests │ Suit. │ STT   │ Verra │  Scenarios      │
-│ NDVI  │       │       │ TTS   │ GS    │                 │
-├───────┴───────┴───────┴───────┴───────┴─────────────────┤
-│           SQLite (default) / PostgreSQL                  │
-└─────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│                          Next.js 16 Frontend                           │
+│  App Router · TypeScript · Tailwind CSS · MapLibre GL · Recharts       │
+│  Lucide Icons · Web Speech API (STT/TTS) · Interactive IFS Dashboard   │
+├────────────────────────────────────────────────────────────────────────┤
+│                          FastAPI Backend                               │
+│        Python 3.11 · Pydantic v2 · SQLAlchemy ORM · Uvicorn            │
+├───────┬───────┬───────┬───────┬────────┬──────────────┬────────────────┤
+│  NASA │ Soil  │ Crop  │ AI    │ Carbon │ Digital Twin │ IFS Engine     │
+│  GPM  │ Grids │ Engine│ Asst. │ Credit │ Simulator    │ Cattle THI     │
+│ POWER │ Lab   │ Rotn. │ IPM   │ FPO    │ What-If      │ Pond Sizer     │
+│ SMAP  │ Tests │ Suit. │ STT   │ Verra  │ Scenarios    │ Duck/Poultry   │
+│ NDVI  │       │       │ TTS   │ GS     │              │ Apiculture/NPK │
+├───────┴───────┴───────┴───────┴────────┴──────────────┴────────────────┤
+│                     SQLite (default) / PostgreSQL                      │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
 **Key Design Principles:**
@@ -258,7 +264,7 @@ cd backend
 python -m pytest -v
 ```
 
-All 7 test suites pass:
+All 8 test suites pass:
 
 | Test Suite | Coverage |
 |---|---|
@@ -266,6 +272,7 @@ All 7 test suites pass:
 | `test_carbon.py` | Carbon Eligibility, Yields & Evidence |
 | `test_environment.py` | NASA GPM, POWER, SMAP, NDVI/NDMI |
 | `test_farms_auth.py` | Farm Registration, Geodesic Area & Multi-Tenant Isolation |
+| `test_integrated_farming.py` | Cattle THI Heat Stress, Pond Sizer, Apiculture & Bio-Resource Nutrient Loop |
 | `test_rotation_digital_twin.py` | Rotation Optimizer & What-If Simulator |
 | `test_soil_terrain_crops.py` | SoilGrids, Lab Tests, NASADEM & Crop Suitability |
 | `test_tasks_reports.py` | Condition Alerts, Task CRUD & Decision Dossiers |
@@ -306,6 +313,7 @@ FieldShift/
 │   │       ├── carbon_service.py          # Carbon credit eligibility & modeling
 │   │       ├── crop_service.py            # 18-crop knowledge base & suitability
 │   │       ├── digital_twin_service.py    # Farm virtual replica & simulation
+│   │       ├── integrated_farming_service.py # Livestock THI, pond sizer, apiculture & bio-resource loop
 │   │       ├── nasa_power_service.py      # NASA POWER agroclimatology
 │   │       ├── report_service.py          # Decision dossier generation
 │   │       ├── rotation_optimizer.py      # 3-strategy rotation planner
@@ -314,7 +322,7 @@ FieldShift/
 │   │       ├── task_service.py            # Condition-triggered task engine
 │   │       ├── terrain_service.py         # NASADEM elevation & TWI
 │   │       └── vegetation_service.py      # Landsat/Sentinel NDVI/NDMI
-│   └── tests/                   # 7 comprehensive test suites
+│   └── tests/                   # 8 comprehensive test suites
 ├── frontend/
 │   ├── app/                     # Next.js 16 App Router pages
 │   │   ├── assistant/           # AI Farm Assistant (multilingual, STT/TTS)
@@ -322,6 +330,7 @@ FieldShift/
 │   │   ├── digital-twin/        # Predictive Digital Twin
 │   │   ├── earth-intelligence/  # NASA Earth Observations
 │   │   ├── farms/               # Farm Registration & Maps
+│   │   ├── integrated-farming/  # Integrated Farming System (IFS) Circular Dashboard
 │   │   ├── reports/             # Decision Dossier Export
 │   │   ├── rotation/            # Crop Rotation Optimizer
 │   │   ├── soil/                # Soil Intelligence

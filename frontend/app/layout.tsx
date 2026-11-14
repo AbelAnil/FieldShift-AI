@@ -4,6 +4,7 @@ import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import OfflineBanner from "@/components/OfflineBanner";
 import { AuthProvider } from "@/context/AuthContext";
+import { UIProvider } from "@/context/UIContext";
 
 export const metadata: Metadata = {
   title: "FieldShift AI - NASA Agricultural Decision-Support",
@@ -20,14 +21,16 @@ export default function RootLayout({
     <html lang="en" className="dark" suppressHydrationWarning>
       <body className="bg-zinc-950 text-zinc-100 antialiased font-sans" suppressHydrationWarning>
         <AuthProvider>
-          <div className="flex min-h-screen">
-            <Sidebar />
-            <div className="flex-1 flex flex-col min-w-0">
-              <OfflineBanner />
-              <Header />
-              <main className="flex-1 p-6 lg:p-8 overflow-y-auto">{children}</main>
+          <UIProvider>
+            <div className="flex min-h-screen relative w-full overflow-x-hidden">
+              <Sidebar />
+              <div className="flex-1 flex flex-col min-w-0 w-full">
+                <OfflineBanner />
+                <Header />
+                <main className="flex-1 p-3.5 sm:p-6 lg:p-8 overflow-y-auto w-full max-w-full">{children}</main>
+              </div>
             </div>
-          </div>
+          </UIProvider>
         </AuthProvider>
       </body>
     </html>

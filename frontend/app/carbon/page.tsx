@@ -244,12 +244,12 @@ export default function CarbonCreditsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           {farms.length > 0 && (
             <select
               value={selectedFarm?.id || ""}
               onChange={(e) => handleSelectFarm(e.target.value)}
-              className="bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-emerald-500 font-medium cursor-pointer"
+              className="flex-1 sm:flex-none bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-emerald-500 font-medium cursor-pointer min-w-0"
             >
               {farms.map((f) => (
                 <option key={f.id} value={f.id}>
@@ -265,7 +265,8 @@ export default function CarbonCreditsPage() {
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs transition shadow-lg shadow-emerald-950/20"
           >
             <Download className="w-4 h-4" />
-            <span>Export Aggregation Pack</span>
+            <span className="hidden sm:inline">Export Aggregation Pack</span>
+            <span className="sm:hidden">Export</span>
           </button>
         </div>
       </div>
@@ -666,8 +667,8 @@ export default function CarbonCreditsPage() {
 
       {/* Modal: Add Evidence Item */}
       {isEvidenceModalOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
               <h3 className="font-bold text-white text-base">Record Carbon Evidence Document</h3>
               <button onClick={() => setIsEvidenceModalOpen(false)} className="text-zinc-500 hover:text-zinc-300 p-1">

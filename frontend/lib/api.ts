@@ -1003,3 +1003,290 @@ export async function fetchCarbonDossier(farmId: string, token: string): Promise
   if (!response.ok) throw new Error(`Failed to fetch carbon dossier: HTTP ${response.status}`);
   return response.json();
 }
+
+// ==========================================
+// Module 11: Integrated Farming System (IFS)
+// ==========================================
+
+export interface LivestockItem {
+  id: string;
+  farm_id: string;
+  animal_type: string;
+  breed_name: string;
+  unit_count: number;
+  daily_yield_metric: string | null;
+  daily_manure_kg_total: number;
+  biogas_linked: boolean;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface FarmPondItem {
+  id: string;
+  farm_id: string;
+  pond_name: string;
+  surface_area_sqm: number;
+  mean_depth_m: number;
+  capacity_litres: number;
+  primary_fish_species: string;
+  stocking_density_count: number;
+  harvestable_catchment_m3: number;
+  irrigation_drawdown_days: number;
+  water_source: string;
+  created_at: string;
+}
+
+export interface ApicultureItem {
+  id: string;
+  farm_id: string;
+  bee_species: string;
+  hive_count: number;
+  target_pollination_crops: string[];
+  annual_honey_yield_kg: number;
+  estimated_pollination_value_inr: number;
+  medicinal_honey_market: boolean;
+  created_at: string;
+}
+
+export interface CattleTHIStatus {
+  farm_id: string;
+  farm_name: string;
+  temperature_c: number;
+  relative_humidity_pct: number;
+  thi_value: number;
+  stress_level: string;
+  respiration_impact: string;
+  milk_yield_risk_pct: number;
+  alert_triggered: boolean;
+  recommended_interventions: string[];
+  nasa_telemetry_source: string;
+}
+
+export interface RainwaterPondTelemetry {
+  farm_id: string;
+  farm_name: string;
+  farm_area_acres: number;
+  cumulative_30d_rain_mm: number;
+  harvestable_runoff_m3: number;
+  harvestable_runoff_litres: number;
+  pond_capacity_m3: number;
+  pond_fill_percentage: number;
+  fish_carrying_capacity_kg: number;
+  emergency_dry_irrigation_days: number;
+  species_mix: {
+    species: string;
+    stocking_ratio_pct: number;
+    feed: string;
+  }[];
+  management_advisory: string;
+}
+
+export interface PollinationImpactTelemetry {
+  farm_id: string;
+  active_crop: string;
+  hive_count: number;
+  bee_species: string;
+  projected_yield_increase_pct: number;
+  estimated_additional_harvest_value_inr: number;
+  annual_honey_production_kg: number;
+  annual_honey_gross_revenue_inr: number;
+  forage_calendar_status: string;
+  synergy_summary: string;
+}
+
+export interface NutrientBioResourceBalance {
+  farm_id: string;
+  total_fym_produced_tons_year: number;
+  total_poultry_manure_kg_year: number;
+  biogas_slurry_litres_year: number;
+  nitrogen_n_displaced_kg: number;
+  phosphorus_p_displaced_kg: number;
+  potassium_k_displaced_kg: number;
+  synthetic_fertilizer_cost_saved_inr: number;
+  soil_organic_carbon_gain_rate: string;
+  circular_loops: {
+    source: string;
+    destination: string;
+    benefit: string;
+  }[];
+}
+
+export interface IntegratedFarmingOverview {
+  farm_id: string;
+  farm_name: string;
+  livestock: LivestockItem[];
+  ponds: FarmPondItem[];
+  apiculture: ApicultureItem[];
+  thi_status: CattleTHIStatus;
+  rainwater_telemetry: RainwaterPondTelemetry;
+  pollination_telemetry: PollinationImpactTelemetry;
+  nutrient_balance: NutrientBioResourceBalance;
+}
+
+export async function fetchIntegratedFarmingOverview(
+  farmId: string,
+  token: string
+): Promise<IntegratedFarmingOverview> {
+  const response = await fetch(`${API_BASE_URL}/api/integrated-farming/${farmId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to fetch IFS overview: HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchCattleTHITelemetry(
+  farmId: string,
+  token: string
+): Promise<CattleTHIStatus> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/integrated-farming/${farmId}/thi-telemetry`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to fetch cattle THI: HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchRainwaterPondTelemetry(
+  farmId: string,
+  token: string
+): Promise<RainwaterPondTelemetry> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/integrated-farming/${farmId}/rainwater-pond`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to fetch pond telemetry: HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchPollinationImpactTelemetry(
+  farmId: string,
+  token: string
+): Promise<PollinationImpactTelemetry> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/integrated-farming/${farmId}/pollination-impact`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to fetch pollination impact: HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchNutrientBioResourceBalance(
+  farmId: string,
+  token: string
+): Promise<NutrientBioResourceBalance> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/integrated-farming/${farmId}/nutrient-balance`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to fetch nutrient balance: HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function addLivestockProfile(
+  farmId: string,
+  data: {
+    animal_type: string;
+    breed_name: string;
+    unit_count: number;
+    daily_yield_metric?: string;
+    daily_manure_kg_total?: number;
+    biogas_linked?: boolean;
+    notes?: string;
+  },
+  token: string
+): Promise<LivestockItem> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/integrated-farming/${farmId}/livestock`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to add livestock: HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function addFarmPondProfile(
+  farmId: string,
+  data: {
+    pond_name?: string;
+    surface_area_sqm: number;
+    mean_depth_m?: number;
+    primary_fish_species?: string;
+    stocking_density_count?: number;
+    water_source?: string;
+  },
+  token: string
+): Promise<FarmPondItem> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/integrated-farming/${farmId}/pond`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to add farm pond: HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function addApicultureProfile(
+  farmId: string,
+  data: {
+    bee_species: string;
+    hive_count: number;
+    target_pollination_crops?: string[];
+    medicinal_honey_market?: boolean;
+  },
+  token: string
+): Promise<ApicultureItem> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/integrated-farming/${farmId}/apiculture`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to add apiculture profile: HTTP ${response.status}`);
+  }
+  return response.json();
+}

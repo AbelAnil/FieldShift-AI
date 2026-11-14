@@ -228,10 +228,10 @@ export default function EarthIntelligencePage() {
       </div>
 
       {/* Tab Controls for Detailed Charts */}
-      <div className="flex items-center gap-2 border-b border-zinc-800 pb-2">
+      <div className="flex items-center gap-2 border-b border-zinc-800 pb-2 overflow-x-auto scrollbar-none">
         <button
           onClick={() => setActiveTab("rainfall")}
-          className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${
+          className={`shrink-0 px-4 py-2 rounded-xl text-xs font-semibold transition ${
             activeTab === "rainfall"
               ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30"
               : "text-zinc-400 hover:text-zinc-200"
@@ -241,7 +241,7 @@ export default function EarthIntelligencePage() {
         </button>
         <button
           onClick={() => setActiveTab("climate")}
-          className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${
+          className={`shrink-0 px-4 py-2 rounded-xl text-xs font-semibold transition ${
             activeTab === "climate"
               ? "bg-amber-500/15 text-amber-400 border border-amber-500/30"
               : "text-zinc-400 hover:text-zinc-200"
@@ -251,7 +251,7 @@ export default function EarthIntelligencePage() {
         </button>
         <button
           onClick={() => setActiveTab("vegetation")}
-          className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${
+          className={`shrink-0 px-4 py-2 rounded-xl text-xs font-semibold transition ${
             activeTab === "vegetation"
               ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
               : "text-zinc-400 hover:text-zinc-200"
@@ -261,7 +261,7 @@ export default function EarthIntelligencePage() {
         </button>
         <button
           onClick={() => setActiveTab("provenance")}
-          className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${
+          className={`shrink-0 px-4 py-2 rounded-xl text-xs font-semibold transition ${
             activeTab === "provenance"
               ? "bg-purple-500/15 text-purple-400 border border-purple-500/30"
               : "text-zinc-400 hover:text-zinc-200"
@@ -292,7 +292,7 @@ export default function EarthIntelligencePage() {
             </div>
           </div>
 
-          <div className="h-80 w-full pt-4">
+          <div className="h-64 sm:h-80 w-full pt-4">
             {rainfallData && rainfallData.timeseries.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={rainfallData.timeseries} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -333,7 +333,7 @@ export default function EarthIntelligencePage() {
             </div>
           </div>
 
-          <div className="h-80 w-full pt-4">
+          <div className="h-64 sm:h-80 w-full pt-4">
             {envData && envData.weather_timeseries.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={envData.weather_timeseries} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -372,7 +372,7 @@ export default function EarthIntelligencePage() {
             </div>
           </div>
 
-          <div className="h-80 w-full pt-4">
+          <div className="h-64 sm:h-80 w-full pt-4">
             {vegData && vegData.observations.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={vegData.observations} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>

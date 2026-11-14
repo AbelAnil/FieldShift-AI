@@ -19,6 +19,11 @@ from app.models.carbon import (
     CarbonEvidence,
     CarbonPartner,
 )
+from app.models.integrated_farming import (
+    LivestockProfile,
+    FarmPondProfile,
+    ApicultureProfile,
+)
 
 __all__ = [
     "User",
@@ -40,4 +45,7 @@ __all__ = [
     "CarbonEstimate",
     "CarbonEvidence",
     "CarbonPartner",
+    "LivestockProfile",
+    "FarmPondProfile",
+    "ApicultureProfile",
 ]

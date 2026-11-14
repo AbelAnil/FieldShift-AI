@@ -91,12 +91,12 @@ export default function ReportsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           {farms.length > 0 && (
             <select
               value={selectedFarm?.id || ""}
               onChange={(e) => handleSelectFarm(e.target.value)}
-              className="bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-emerald-500 font-medium cursor-pointer"
+              className="flex-1 sm:flex-none bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-emerald-500 font-medium cursor-pointer min-w-0"
             >
               {farms.map((f) => (
                 <option key={f.id} value={f.id}>
@@ -109,19 +109,19 @@ export default function ReportsPage() {
           <button
             onClick={() => selectedFarm && loadReport(selectedFarm.id, token)}
             disabled={isLoading || !selectedFarm}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-200 text-xs font-semibold transition"
+            className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-200 text-xs font-semibold transition"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-emerald-400 ${isLoading ? "animate-spin" : ""}`} />
-            <span>Regenerate</span>
+            <span>Regen</span>
           </button>
 
           <button
             onClick={handleCopyMarkdown}
             disabled={!report}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-200 text-xs font-semibold transition"
+            className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-200 text-xs font-semibold transition"
           >
             {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-            <span>{isCopied ? "Copied" : "Copy MD"}</span>
+            <span>{isCopied ? "Copied" : "Copy"}</span>
           </button>
 
           <button
@@ -130,7 +130,7 @@ export default function ReportsPage() {
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs transition shadow-lg shadow-emerald-950/20"
           >
             <Download className="w-4 h-4" />
-            <span>Export Dossier</span>
+            <span>Export</span>
           </button>
         </div>
       </div>
@@ -149,7 +149,7 @@ export default function ReportsPage() {
       ) : report ? (
         <div className="space-y-6">
           {/* KPI Summary Tiles */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             <div className="p-3.5 rounded-2xl bg-zinc-900/60 border border-zinc-800">
               <div className="text-[10px] font-mono uppercase text-zinc-500">Composite Risk</div>
               <div className="text-lg font-bold text-white mt-1">
@@ -202,8 +202,8 @@ export default function ReportsPage() {
           </div>
 
           {/* Dossier Document Sheet */}
-          <div className="rounded-3xl bg-zinc-900/40 border border-zinc-800 p-8 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+          <div className="rounded-3xl bg-zinc-900/40 border border-zinc-800 p-4 sm:p-8 shadow-2xl space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800 pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-emerald-950 border border-emerald-800 flex items-center justify-center text-emerald-400">
                   <FileText className="w-5 h-5" />

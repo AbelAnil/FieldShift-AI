@@ -23,6 +23,7 @@ import {
   Clock,
   AlertTriangle,
   RefreshCw,
+  Recycle,
 } from "lucide-react";
 import {
   Farm,
@@ -64,30 +65,30 @@ export default function Home() {
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-16">
       {/* Hero Welcome */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-950/70 via-zinc-900 to-zinc-950 border border-emerald-900/50 p-8 shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-950/70 via-zinc-900 to-zinc-950 border border-emerald-900/50 p-5 sm:p-8 shadow-2xl">
         <div className="relative z-10 max-w-3xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <div className="inline-flex flex-wrap items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
             <span>NASA Space Apps Challenge 2026</span>
             <span>•</span>
             <span>Team ChungusReloaded</span>
-            <span>•</span>
-            <span>v3.2 Production</span>
+            <span className="hidden sm:inline">•</span>
+            <span className="hidden sm:inline">v4.0 Production</span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight">
             Adapting Farms with NASA Earth Observations & Local Intelligence
           </h1>
 
-          <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
+          <p className="text-zinc-300 text-xs sm:text-sm md:text-base leading-relaxed">
             FieldShift AI creates a farm-level predictive digital twin integrating NASA satellite precipitation,
             ISRIC soil intelligence, terrain hydrology, crop rotation optimization, conversational AI guidance,
             and smallholder carbon credit readiness.
           </p>
 
-          <div className="flex flex-wrap items-center gap-3 pt-2">
+          <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3 pt-2">
             <Link
               href="/digital-twin"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-sm transition shadow-lg shadow-emerald-950/30"
+              className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs sm:text-sm transition shadow-lg shadow-emerald-950/30"
             >
               <Binary className="w-4 h-4" />
               <span>Open Digital Twin</span>
@@ -95,17 +96,24 @@ export default function Home() {
             </Link>
             <Link
               href="/assistant"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700 text-sm font-semibold transition"
+              className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700 text-xs sm:text-sm font-semibold transition"
             >
               <Bot className="w-4 h-4 text-emerald-400" />
               <span>Ask AI Farm Assistant</span>
             </Link>
             <Link
               href="/carbon"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700 text-sm font-semibold transition"
+              className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700 text-xs sm:text-sm font-semibold transition"
             >
               <Coins className="w-4 h-4 text-emerald-400" />
               <span>Carbon Credits</span>
+            </Link>
+            <Link
+              href="/integrated-farming"
+              className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-emerald-950/60 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-700/80 text-xs sm:text-sm font-semibold transition"
+            >
+              <Recycle className="w-4 h-4 text-emerald-400" />
+              <span>Integrated Farming (IFS)</span>
             </Link>
           </div>
         </div>
@@ -367,6 +375,27 @@ export default function Home() {
             </div>
           </Link>
 
+          {/* Integrated Farming System (IFS) */}
+          <Link
+            href="/integrated-farming"
+            className="p-5 rounded-2xl bg-zinc-900/40 hover:bg-zinc-850 border border-zinc-800 hover:border-zinc-700 transition duration-150 group space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-9 h-9 rounded-xl bg-teal-950/80 border border-teal-800/80 flex items-center justify-center text-teal-400">
+                <Recycle className="w-4 h-4" />
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 group-hover:text-teal-300">
+                Module 11 • Circular Matrix
+              </span>
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-zinc-100 group-hover:text-white">Integrated Farming (IFS)</h3>
+              <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
+                Circular bio-resource loop: dairy heat stress (THI), farm pond rainwater sizer, rice-duck pest control, and apiculture (+28% pollination).
+              </p>
+            </div>
+          </Link>
+
           {/* Reports & Decision Dossiers */}
           <Link
             href="/reports"
@@ -395,25 +424,26 @@ export default function Home() {
         <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
           <div className="flex items-center gap-2 text-white font-bold text-sm">
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            <span>NASA Space Apps 2026 Implementation Roadmap (Consolidated v3.2)</span>
+            <span>NASA Space Apps 2026 Implementation Roadmap (Consolidated v4.0)</span>
           </div>
           <span className="text-xs font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800 px-2.5 py-0.5 rounded-full">
-            10 / 10 Phases Built
+            11 / 11 Phases Built
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 text-xs">
           {[
             { phase: "Phase 0", title: "App Foundation", status: "Done" },
             { phase: "Phase 1", title: "Farm Maps & Auth", status: "Done" },
             { phase: "Phase 2", title: "NASA Earth Data", status: "Done" },
-            { phase: "Phase 3 & 4", title: "Soil, Terrain & Crops", status: "Done" },
-            { phase: "Phase 5 & 6", title: "Rotation & Digital Twin", status: "Done" },
-            { phase: "Phase 7", title: "AI Farm Assistant", status: "Done" },
+            { phase: "Phase 3 & 4", title: "Soil & Terrain", status: "Done" },
+            { phase: "Phase 5 & 6", title: "Rotation & Twin", status: "Done" },
+            { phase: "Phase 7", title: "AI Assistant", status: "Done" },
             { phase: "Phase 8", title: "Tasks & Dossiers", status: "Done" },
-            { phase: "Phase 9", title: "Carbon Credit Module", status: "Done" },
-            { phase: "Phase 10", title: "Deployment Ready", status: "Active" },
-            { phase: "Global", title: "Region Pack System", status: "Active" },
+            { phase: "Phase 9", title: "Carbon Credits", status: "Done" },
+            { phase: "Phase 10", title: "IFS Architecture", status: "Done" },
+            { phase: "Phase 11", title: "Edge Deployment", status: "Active" },
+            { phase: "Global", title: "Region Pack", status: "Active" },
           ].map((p, idx) => (
             <div key={idx} className="p-3 rounded-2xl bg-zinc-950 border border-zinc-800/80 space-y-1">
               <div className="flex items-center justify-between">

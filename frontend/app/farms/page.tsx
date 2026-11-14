@@ -201,26 +201,26 @@ export default function FarmsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <button
             onClick={() => setIsDrawingMode(!isDrawingMode)}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition ${
+            className={`inline-flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex-1 sm:flex-initial ${
               isDrawingMode
                 ? "bg-amber-500 text-zinc-950 shadow-lg shadow-amber-950/40"
                 : "bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700"
             }`}
           >
-            <Compass className="w-4 h-4" />
-            <span>{isDrawingMode ? "Exit Drawing" : "Draw Boundary on Map"}</span>
+            <Compass className="w-4 h-4 shrink-0" />
+            <span>{isDrawingMode ? "Exit Drawing" : "Draw Boundary"}</span>
           </button>
 
           <button
             onClick={() => {
               setIsRegisterModalOpen(true);
             }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold text-sm transition shadow-lg shadow-emerald-950"
+            className="inline-flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold text-xs sm:text-sm transition shadow-lg shadow-emerald-950 flex-1 sm:flex-initial"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 shrink-0" />
             <span>Register Farm</span>
           </button>
         </div>
@@ -385,8 +385,8 @@ export default function FarmsPage() {
 
       {/* Modal: Farm Registration */}
       {isRegisterModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-3xl bg-zinc-900 border border-zinc-800 p-6 space-y-5 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-3xl bg-zinc-900 border border-zinc-800 p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
               <h3 className="font-bold text-lg text-white">Register New Agricultural Farm</h3>
               <button

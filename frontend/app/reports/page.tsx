@@ -216,14 +216,96 @@ export default function ReportsPage() {
 
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-emerald-950/60 border border-emerald-800/80 text-emerald-300">
-                  Certified KAU & NASA Grounding
+                  Grounded in KAU & NASA data
                 </span>
               </div>
             </div>
 
-            {/* Structured Markdown Preview */}
-            <div className="p-6 rounded-2xl bg-zinc-950 border border-zinc-850 font-mono text-xs text-zinc-300 overflow-x-auto whitespace-pre-wrap leading-relaxed shadow-inner max-h-[600px] overflow-y-auto">
-              {report.markdown_report}
+            {/* Formatted Dossier Document View */}
+            <div className="p-6 sm:p-8 rounded-2xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-300 leading-relaxed shadow-inner max-h-[700px] overflow-y-auto space-y-4 font-sans">
+              {report.markdown_report.split("\n").map((line, idx) => {
+                const trimmed = line.trim();
+                if (trimmed.startsWith("# ")) {
+                  return (
+                    <h1 key={idx} className="text-xl font-extrabold text-white border-b border-zinc-800 pb-2 mt-4 pt-2">
+                      {trimmed.replace("# ", "")}
+                    </h1>
+                  );
+                }
+                if (trimmed.startsWith("## ")) {
+                  return (
+                    <h2 key={idx} className="text-base font-bold text-emerald-400 mt-5 pt-1 border-b border-zinc-900 pb-1">
+                      {trimmed.replace("## ", "")}
+                    </h2>
+                  );
+                }
+                if (trimmed.startsWith("### ")) {
+                  return (
+                    <h3 key={idx} className="text-sm font-semibold text-zinc-200 mt-3">
+                      {trimmed.replace("### ", "")}
+                    </h3>
+                  );
+                }
+                if (trimmed.startsWith("---")) {
+                  return <hr key={idx} className="border-zinc-800 my-4" />;
+                }
+                if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+                  const content = trimmed.substring(2);
+                  return (
+                    <div key={idx} className="flex items-start gap-2 pl-2 text-zinc-300">
+                      <span className="text-emerald-400 mt-0.5">•</span>
+                      <span>
+                        {content.split(/(\*\*.*?\*\*)/).map((chunk, cIdx) => {
+                          if (chunk.startsWith("**") && chunk.endsWith("**")) {
+                            return (
+                              <strong key={cIdx} className="text-white font-semibold">
+                                {chunk.slice(2, -2)}
+                              </strong>
+                            );
+                          }
+                          return chunk;
+                        })}
+                      </span>
+                    </div>
+                  );
+                }
+                if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
+                  // Table row
+                  const cells = trimmed
+                    .split("|")
+                    .slice(1, -1)
+                    .map((c) => c.trim());
+                  if (cells.every((c) => c.match(/^:?-+:?$/))) {
+                    return null; // separator row
+                  }
+                  return (
+                    <div key={idx} className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-2 bg-zinc-900/60 rounded border border-zinc-850 font-mono text-[11px]">
+                      {cells.map((cell, cIdx) => (
+                        <div key={cIdx} className="text-zinc-300 truncate">
+                          {cell}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                }
+                if (!trimmed) {
+                  return <div key={idx} className="h-1" />;
+                }
+                return (
+                  <p key={idx} className="text-zinc-300">
+                    {trimmed.split(/(\*\*.*?\*\*)/).map((chunk, cIdx) => {
+                      if (chunk.startsWith("**") && chunk.endsWith("**")) {
+                        return (
+                          <strong key={cIdx} className="text-white font-semibold">
+                            {chunk.slice(2, -2)}
+                          </strong>
+                        );
+                      }
+                      return chunk;
+                    })}
+                  </p>
+                );
+              })}
             </div>
 
             {/* Bottom Actions */}

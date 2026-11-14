@@ -361,7 +361,7 @@ export default function TasksPage() {
                     )}
                     {t.completed_at && (
                       <span className="text-emerald-400">
-                        Done: {new Date(t.completed_at).toLocaleDateString()}
+                        Done: {new Date(t.completed_at).toISOString().split("T")[0]}
                       </span>
                     )}
                   </div>

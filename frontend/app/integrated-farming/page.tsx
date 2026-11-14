@@ -337,7 +337,7 @@ export default function IntegratedFarmingPage() {
               </div>
               <div className="space-y-1">
                 <div className="text-3xl font-extrabold text-white flex items-baseline gap-1.5">
-                  {(overview.rainwater_telemetry.harvestable_runoff_litres / 100000).toFixed(1)}L
+                  {(overview.rainwater_telemetry.harvestable_runoff_litres / 100000).toFixed(1)}
                   <span className="text-xs font-medium text-zinc-400">Lakh Litres Rain</span>
                 </div>
                 <div className="text-xs text-zinc-400">
@@ -475,7 +475,7 @@ export default function IntegratedFarmingPage() {
                   <div className="flex items-center gap-2 text-xs">
                     <span className="flex items-center gap-1.5 text-emerald-400">
                       <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                      Closed Loop Active
+                      Modelled Closed Loop
                     </span>
                   </div>
                 </div>
@@ -695,7 +695,7 @@ export default function IntegratedFarmingPage() {
                         </div>
                       </div>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950/70 text-emerald-300 border border-emerald-900 self-start sm:self-auto shrink-0">
-                        100% Recycled
+                        Modelled Bio-Loop
                       </span>
                     </div>
                   ))}
@@ -1249,7 +1249,7 @@ export default function IntegratedFarmingPage() {
                       <tr>
                         <td className="py-3 font-semibold text-white">Pollination Fruit Set</td>
                         <td className="py-3 text-zinc-400">Subject to wild insect decline</td>
-                        <td className="py-3 text-emerald-400 font-medium">+20% to +35% fruit set boost via managed bee colonies</td>
+                        <td className="py-3 text-emerald-400 font-medium">+28% fruit set boost via managed bee colonies</td>
                       </tr>
                     </tbody>
                   </table>

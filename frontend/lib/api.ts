@@ -7,6 +7,7 @@ export interface HealthResponse {
   timestamp: string;
   uptime_seconds: number;
   python_version: string;
+  services?: Record<string, { status: string; name?: string; fallback_mode?: string }>;
 }
 
 export interface User {
@@ -94,6 +95,20 @@ export interface RainfallResponse {
     rolling_7d_rainfall_mm: number;
     is_heavy_rain: boolean;
   }[];
+  data_status: string;
+  data_status_label: string;
+  last_updated: string;
+  source_url: string;
+  climatology_baseline: {
+    source: string;
+    climate_regime: string;
+    normal_rainfall_30d_mm: number;
+    current_rainfall_30d_mm: number;
+    rainfall_anomaly_pct: number;
+    anomaly_category: string;
+    anomaly_label: string;
+    adaptation_guidance: string;
+  };
 }
 
 export interface VegetationResponse {
@@ -136,6 +151,9 @@ export interface EnvironmentSummaryResponse {
   location: string;
   coordinates: { latitude: number; longitude: number };
   period: string;
+  data_status?: string;
+  data_status_label?: string;
+  last_updated?: string;
   summary: {
     avg_temperature_c: number;
     cumulative_rainfall_mm: number;
@@ -184,6 +202,32 @@ export async function loginDemoUser(farmerId: number = 1): Promise<TokenResponse
   });
   if (!response.ok) {
     throw new Error(`Failed to login demo user: HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function loadDemoFarm(token: string): Promise<Farm> {
+  const response = await fetch(`${API_BASE_URL}/api/farms/demo/load`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to load demo farm: HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function resetDemoFarm(token: string): Promise<{ status: string; message: string }> {
+  const response = await fetch(`${API_BASE_URL}/api/farms/demo/reset`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to reset demo farm: HTTP ${response.status}`);
   }
   return response.json();
 }
@@ -364,6 +408,20 @@ export interface CropSuitabilityEvaluation {
     drainage_score: number;
     seasonal_score: number;
   };
+  weighted_contributions?: {
+    soil: number;
+    climate: number;
+    water: number;
+    drainage: number;
+    seasonal: number;
+  };
+  weights_pct?: {
+    soil: number;
+    climate: number;
+    water: number;
+    drainage: number;
+    seasonal: number;
+  };
   supporting_factors: string[];
   limitations: string[];
   missing_data: string[];
@@ -507,6 +565,22 @@ export interface SimulationResponse {
   projected_risk_level: string;
   consequences: string[];
   scientific_disclaimer: string;
+  strategy_evaluations?: {
+    strategy_name: string;
+    strategy_id: string;
+    strategy?: string;
+    crops?: string;
+    focus_area?: string;
+    scenario_suitability_score?: number;
+    resilience_score?: number;
+    resilience_rating?: string;
+    impact_summary?: string;
+    is_recommended?: boolean;
+    projected_risk_score?: number;
+    projected_risk_level?: string;
+    resilience_assessment?: string;
+    consequences?: string[];
+  }[];
 }
 
 export async function evaluateCropSuitability(farmId: string, token: string): Promise<CropSuitabilityResponse> {
@@ -533,6 +607,7 @@ export interface RotationStep {
   nitrogen_fixation: boolean;
   role: string;
   notes: string;
+  monsoon_window: string;
 }
 
 export interface RotationStrategy {
@@ -545,6 +620,26 @@ export interface RotationStrategy {
   water_efficiency_rating: string;
   soil_health_delta: string;
   pest_disease_risk_mitigation: string;
+  metrics: {
+    n_credit_kg_ha: number;
+    water_saving_pct: number;
+    gross_income_rating: string;
+    gross_income_inr_ac: number;
+    pest_mitigation_pct: number;
+    labor_intensity: string;
+    resilience_to_drought: string;
+  };
+  soil_trend_3yr: {
+    year: string;
+    soc_pct: number;
+    nitrogen_credit_kg: number;
+    soil_index: number;
+  }[];
+  is_recommended: boolean;
+  why_recommended: string;
+  why_this_one: string;
+  priority_adjusted_score: number;
+  monsoon_window?: string;
 }
 
 export interface FarmRotationResponse {
@@ -555,8 +650,14 @@ export interface FarmRotationResponse {
   strategies: RotationStrategy[];
 }
 
-export async function fetchFarmRotation(farmId: string, token: string): Promise<FarmRotationResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/farms/${farmId}/rotation`, {
+export async function fetchFarmRotation(farmId: string, token: string, priorities?: string[]): Promise<FarmRotationResponse> {
+  const params = new URLSearchParams();
+  if (priorities && priorities.length > 0) {
+    priorities.forEach((p) => params.append("priorities", p));
+  }
+  const qs = params.toString();
+  const url = `${API_BASE_URL}/api/farms/${farmId}/rotation${qs ? `?${qs}` : ""}`;
+  const response = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
     cache: "no-store",
   });

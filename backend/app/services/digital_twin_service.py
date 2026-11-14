@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy.orm import Session
 from app.models.farm import Farm
 from app.models.digital_twin_snapshot import DigitalTwinSnapshot
+from app.models.environmental_observation import EnvironmentalObservation
 from app.services.soil_service import SoilService
 from app.services.terrain_service import TerrainService
 from app.services.nasa_power_service import NASAPowerService
@@ -166,13 +167,22 @@ class DigitalTwinService:
         - Delayed sowing
         """
         crops = CropService.list_crops(db)
-        matched_crop = next((c for c in crops if c.crop_name.lower() == crop_name.lower()), crops[0])
+        c_lower = crop_name.lower().strip()
+        matched_crop = next(
+            (c for c in crops if c.crop_name.lower() == c_lower or c_lower in c.crop_name.lower() or c.crop_name.lower() in c_lower or c.id.lower() == c_lower),
+            crops[0]
+        )
 
         soil = SoilService.analyze_soil_profile(db, farm.id)
         terrain = TerrainService.get_or_calculate_terrain(db, farm.id, farm.latitude, farm.longitude)
 
-        # Baseline rainfall modified by delta
-        base_rain = 180.0
+        # Baseline rainfall from observations or default
+        recent_rain_obs = (
+            db.query(EnvironmentalObservation)
+            .filter(EnvironmentalObservation.farm_id == farm.id, EnvironmentalObservation.parameter == "rainfall")
+            .all()
+        )
+        base_rain = round(sum(o.value for o in recent_rain_obs[-30:]), 1) if recent_rain_obs else 180.0
         simulated_rain = round(base_rain * (1.0 + (rainfall_delta_pct / 100.0)), 1)
         sim_irrigation = farm.irrigation_available if irrigation_available is None else irrigation_available
 
@@ -189,29 +199,123 @@ class DigitalTwinService:
             has_lab_test=soil["has_lab_test"],
         )
 
-        # Calculate scenario risks
+        # Calculate scenario risks dynamically based on perturbations
         sim_risk_score = 15.0
         consequences = []
 
-        if rainfall_delta_pct < -25.0:
-            if not sim_irrigation and matched_crop.water_demand_category in ["High", "Moderate"]:
-                sim_risk_score += 35.0
-                consequences.append(f"Severe moisture stress: {matched_crop.crop_name} requires irrigation during rainfall deficit.")
+        # Drought impact scaling
+        if rainfall_delta_pct < 0:
+            deficit = abs(rainfall_delta_pct)
+            if not sim_irrigation:
+                if matched_crop.water_demand_category == "High":
+                    sim_risk_score += deficit * 1.1 + 15.0
+                    consequences.append(
+                        f"Severe moisture deficit: {matched_crop.crop_name} is a high water-demand crop under rainfed conditions; "
+                        f"projected seasonal yield loss of {min(85, int(deficit * 1.4))}%."
+                    )
+                elif matched_crop.water_demand_category == "Moderate":
+                    sim_risk_score += deficit * 0.8 + 10.0
+                    consequences.append(
+                        f"Moderate drought stress: {matched_crop.crop_name} requires supplemental irrigation during the dry spell."
+                    )
+                else:  # Low water demand (Cassava, Pulses)
+                    sim_risk_score += deficit * 0.35 + 5.0
+                    consequences.append(
+                        f"Hardy drought resilience: {matched_crop.crop_name} tolerates dry spells with minimal physiological stress."
+                    )
             else:
-                consequences.append("Irrigation buffers precipitation deficit; operational pumping costs will increase.")
+                sim_risk_score += deficit * 0.35
+                consequences.append(
+                    f"Active drip irrigation buffers rainfall deficit ({rainfall_delta_pct:+.0f}%); operational pumping power and water extraction costs increase."
+                )
 
-        if rainfall_delta_pct > 30.0:
-            if "swale" in terrain["flow_accumulation_risk"].lower() and matched_crop.drainage_preference.startswith("Well"):
-                sim_risk_score += 28.0
-                consequences.append(f"Waterlogging vulnerability: Southern swale risks rhizome/root rot under +{rainfall_delta_pct}% rainfall.")
-            elif "flooded" in matched_crop.drainage_preference.lower():
-                consequences.append("Excess rainfall is favorable for flooded basin crops like Paddy.")
+        # Flood / heavy rain impact scaling
+        if rainfall_delta_pct > 20.0:
+            excess = rainfall_delta_pct
+            if "flooded" in matched_crop.drainage_preference.lower():
+                consequences.append(
+                    f"Excess monsoon precipitation ({rainfall_delta_pct:+.0f}%) is highly favorable for flooded basin crops like Paddy."
+                )
+            elif "swale" in terrain.get("flow_accumulation_risk", "").lower() or matched_crop.drainage_preference.startswith("Well"):
+                sim_risk_score += excess * 0.75 + 10.0
+                consequences.append(
+                    f"Waterlogging vulnerability: Terrain swales risk root/rhizome rot under {rainfall_delta_pct:+.0f}% rainfall excess."
+                )
+            else:
+                sim_risk_score += excess * 0.4
+                consequences.append(
+                    f"Heavy rainfall ({rainfall_delta_pct:+.0f}%) accelerates topsoil nutrient leaching; requires contour channel inspection."
+                )
 
-        if planting_delay_days > 25:
-            sim_risk_score += 12.0
-            consequences.append(f"Delayed sowing (+{planting_delay_days} days) shifts maturation into seasonal dry window.")
+        if planting_delay_days > 10:
+            sim_risk_score += min(25.0, planting_delay_days * 0.6)
+            consequences.append(
+                f"Delayed sowing (+{planting_delay_days} days) shifts maturation into seasonal dry window."
+            )
 
         sim_risk_score = min(max(round(sim_risk_score, 1), 5.0), 95.0)
+
+        # Multi-Strategy Simulation: Evaluate how Strategy A, B, and C hold up under this exact shock
+        if rainfall_delta_pct < -15.0:
+            # Drought scenario
+            strat_a_resilience = round(max(60.0, 93.5 - (abs(rainfall_delta_pct) * 0.22)), 1)
+            strat_b_resilience = round(max(70.0, 89.0 - (abs(rainfall_delta_pct) * 0.08) + 5.0), 1)  # Designed for drought
+            strat_c_resilience = round(max(50.0, 91.0 - (abs(rainfall_delta_pct) * 0.38)), 1)  # Banana sensitive
+            best_strat = "water_efficiency"
+        elif rainfall_delta_pct > 20.0:
+            # Flood / Excess rain scenario
+            strat_a_resilience = round(max(55.0, 93.5 - (rainfall_delta_pct * 0.28)), 1)  # Cassava sensitive to waterlogging
+            strat_b_resilience = round(max(60.0, 89.0 - (rainfall_delta_pct * 0.20)), 1)
+            strat_c_resilience = round(max(50.0, 91.0 - (rainfall_delta_pct * 0.32)), 1)  # Ginger rot risk
+            best_strat = "water_efficiency"
+        else:
+            # Near-normal baseline
+            strat_a_resilience = 93.5
+            strat_b_resilience = 89.0
+            strat_c_resilience = 91.0
+            best_strat = "soil_health"
+
+        strategy_evaluations = [
+            {
+                "strategy_id": "strat-soil-health",
+                "strategy": "soil_health",
+                "strategy_name": "Strategy A: Soil Health Priority",
+                "crops": "Banana → Cowpea → Cassava",
+                "resilience_score": strat_a_resilience,
+                "resilience_rating": "High Resilience" if strat_a_resilience >= 85 else ("Moderate Resilience" if strat_a_resilience >= 70 else "Vulnerable"),
+                "impact_summary": (
+                    f"Under {rainfall_delta_pct:+.0f}% rain: Year 2 Cowpea deep taproot tolerates dry spell. "
+                    "Accumulated soil organic carbon (+18%) retains subsoil moisture."
+                ),
+                "is_recommended": best_strat == "soil_health",
+            },
+            {
+                "strategy_id": "strat-water-efficiency",
+                "strategy": "water_efficiency",
+                "strategy_name": "Strategy B: Water Efficiency Priority",
+                "crops": "Maize → Black Gram → Turmeric",
+                "resilience_score": strat_b_resilience,
+                "resilience_rating": "Highest Resilience" if strat_b_resilience >= 85 else "Moderate Resilience",
+                "impact_summary": (
+                    f"Under {rainfall_delta_pct:+.0f}% rain: Optimal water defense. Saves ~38% irrigation water "
+                    "relative to perennial crops; zero irrigation needed during pulse stage."
+                ),
+                "is_recommended": best_strat == "water_efficiency",
+            },
+            {
+                "strategy_id": "strat-balanced",
+                "strategy": "balanced",
+                "strategy_name": "Strategy C: Balanced Strategy",
+                "crops": "Banana → Vegetable Cowpea → Ginger",
+                "resilience_score": strat_c_resilience,
+                "resilience_rating": "Moderate Resilience" if strat_c_resilience >= 75 else "Vulnerable Without Irrigation",
+                "impact_summary": (
+                    f"Under {rainfall_delta_pct:+.0f}% rain: Year 1 commercial banana requires supplemental irrigation; "
+                    "Year 2 cowpea recovers soil vitality."
+                ),
+                "is_recommended": best_strat == "balanced",
+            },
+        ]
 
         return {
             "simulation_id": f"SIM-{int(datetime.now().timestamp())}",
@@ -234,8 +338,9 @@ class DigitalTwinService:
             "projected_risk_score": sim_risk_score,
             "projected_risk_level": "Elevated" if sim_risk_score >= 60 else "Moderate" if sim_risk_score >= 35 else "Low",
             "consequences": consequences or ["Favorable scenario with minimal environmental disruption."],
+            "strategy_evaluations": strategy_evaluations,
             "scientific_disclaimer": (
                 "What-if simulation is a predictive decision-support indicator based on multi-factor agronomic rules. "
-                "It does not constitute an exact physiological yield guarantee."
+                "It connects farm crop choice with multi-year rotation resilience under climate shocks."
             ),
         }

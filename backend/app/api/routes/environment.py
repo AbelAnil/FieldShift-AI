@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -88,8 +89,8 @@ async def get_farm_rainfall(
     if farm.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access forbidden.")
 
-    weather = await NASAPowerService.fetch_and_store_weather(
-        db, farm.id, farm.latitude, farm.longitude, days_back=days
+    weather, data_status = await NASAPowerService.fetch_and_store_weather(
+        db, farm.id, farm.latitude, farm.longitude, days_back=days, with_status=True
     )
 
     # Compute rolling 7-day totals & heavy rain alerts
@@ -120,13 +121,42 @@ async def get_farm_rainfall(
             "is_heavy_rain": is_heavy,
         })
 
+    # Multi-year NASA baseline and rainfall anomaly calculation
+    climatology = NASAPowerService.get_climatological_normal(farm.latitude, farm.longitude)
+    normal_30d = climatology["normal_rainfall_mm"]
+    anomaly_pct = round(((total_precip_30d - normal_30d) / max(normal_30d, 1.0)) * 100.0, 1)
+
+    if anomaly_pct > 25.0:
+        anomaly_category = "Surplus (Wet Anomaly)"
+        anomaly_desc = f"+{anomaly_pct:.1f}% above 30-year normal; inspect contour drainage and root disease."
+    elif anomaly_pct < -25.0:
+        anomaly_category = "Deficit (Dry Anomaly)"
+        anomaly_desc = f"{anomaly_pct:.1f}% below 30-year normal; trigger water conservation / drip irrigation."
+    else:
+        anomaly_category = "Near Climatological Normal"
+        anomaly_desc = f"{anomaly_pct:+.1f}% vs 30-year baseline; rainfall matches historical seasonal average."
+
     return {
         "farm_id": farm.id,
         "farm_name": farm.farm_name,
         "dataset": "NASA GPM IMERG / NASA POWER",
         "spatial_resolution": "0.1° (~10 km) to 0.5°",
+        "data_status": data_status,
+        "data_status_label": "Live (NASA GPM / POWER API)" if data_status == "live" else ("Cached Satellite Telemetry" if data_status == "cached" else "Calibrated Regional Baseline"),
+        "last_updated": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+        "source_url": "https://gpm.nasa.gov/data/imerg",
         "observation_count": len(enriched),
         "cumulative_rainfall_mm": round(total_precip_30d, 2),
+        "climatology_baseline": {
+            "source": climatology["source"],
+            "climate_regime": climatology["climate_regime"],
+            "normal_rainfall_30d_mm": normal_30d,
+            "current_rainfall_30d_mm": round(total_precip_30d, 1),
+            "rainfall_anomaly_pct": anomaly_pct,
+            "anomaly_category": anomaly_category,
+            "anomaly_label": f"{abs(anomaly_pct):.0f}% {'above' if anomaly_pct >= 0 else 'below'} normal",
+            "adaptation_guidance": anomaly_desc,
+        },
         "heavy_rain_events_count": len(heavy_rain_events),
         "heavy_rain_events": heavy_rain_events,
         "timeseries": enriched,
@@ -208,8 +238,8 @@ async def get_farm_environment_summary(
     if farm.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access forbidden.")
 
-    weather = await NASAPowerService.fetch_and_store_weather(
-        db, farm.id, farm.latitude, farm.longitude, days_back=30
+    weather, data_status = await NASAPowerService.fetch_and_store_weather(
+        db, farm.id, farm.latitude, farm.longitude, days_back=30, with_status=True
     )
     vegetation = VegetationService.get_or_generate_vegetation_indices(
         db, farm.id, farm.latitude, farm.longitude
@@ -226,15 +256,25 @@ async def get_farm_environment_summary(
     avg_solar = round(sum(w["solar_radiation"] for w in weather) / max(len(weather), 1), 1)
     avg_rh = round(sum(w["relative_humidity"] for w in weather) / max(len(weather), 1), 1)
 
+    climatology = NASAPowerService.get_climatological_normal(farm.latitude, farm.longitude)
+    normal_30d = climatology["normal_rainfall_mm"]
+    anomaly_pct = round(((total_rain - normal_30d) / max(normal_30d, 1.0)) * 100.0, 1)
+
     return {
         "farm_id": farm.id,
         "farm_name": farm.farm_name,
         "location": farm.location_name,
         "coordinates": {"latitude": farm.latitude, "longitude": farm.longitude},
         "period": f"Last {len(weather)} days",
+        "data_status": data_status,
+        "data_status_label": "Live NASA API" if data_status == "live" else ("Cached Satellite Telemetry" if data_status == "cached" else "Calibrated Regional Baseline"),
+        "last_updated": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
         "summary": {
             "avg_temperature_c": avg_temp,
             "cumulative_rainfall_mm": total_rain,
+            "normal_rainfall_30d_mm": normal_30d,
+            "rainfall_anomaly_pct": anomaly_pct,
+            "rainfall_anomaly_label": f"{abs(anomaly_pct):.0f}% {'above' if anomaly_pct >= 0 else 'below'} normal",
             "avg_solar_radiation_mj_m2": avg_solar,
             "avg_relative_humidity_pct": avg_rh,
             "latest_ndvi": latest_veg.get("ndvi"),
@@ -243,6 +283,14 @@ async def get_farm_environment_summary(
             "canopy_vigor": VegetationService.evaluate_canopy_status(
                 latest_veg.get("ndvi", 0.7), latest_veg.get("ndmi", 0.3)
             )["vigor_status"],
+        },
+        "climatology_baseline": {
+            "source": climatology["source"],
+            "climate_regime": climatology["climate_regime"],
+            "normal_rainfall_30d_mm": normal_30d,
+            "current_rainfall_30d_mm": total_rain,
+            "rainfall_anomaly_pct": anomaly_pct,
+            "anomaly_label": f"{abs(anomaly_pct):.0f}% {'above' if anomaly_pct >= 0 else 'below'} normal",
         },
         "weather_timeseries": weather,
         "vegetation_timeseries": vegetation,

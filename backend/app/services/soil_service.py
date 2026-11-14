@@ -105,19 +105,25 @@ class SoilService:
         effective_texture = active_profile.texture if active_profile else "Clay Loam"
         effective_oc = active_profile.organic_carbon if active_profile and active_profile.organic_carbon else 2.14
 
-        # pH Interpretation
+        # pH Interpretation (Standard USDA NRCS Soil pH Classification)
         if effective_ph < 5.5:
             ph_category = "Strongly Acidic"
-            ph_advice = "Consider agricultural lime / dolomite application as recommended by Kerala Agricultural University (KAU)."
-        elif effective_ph <= 6.5:
+            ph_advice = "Strong acidity typical of weathered tropical soils. Consider agricultural lime or dolomite application as recommended by Kerala Agricultural University (KAU)."
+        elif effective_ph <= 6.0:
             ph_category = "Moderately Acidic"
-            ph_advice = "Optimal for most Kerala humid tropical crops (Banana, Cassava, Spices, Rubber)."
-        elif effective_ph <= 7.5:
+            ph_advice = "Moderately acidic. Favorable for acid-tolerant crops like tea, rubber, and pineapple; monitor calcium/magnesium levels."
+        elif effective_ph <= 6.5:
+            ph_category = "Slightly Acidic"
+            ph_advice = "Optimal nutrient availability for most Kerala humid tropical crops (Banana, Cassava, Spices, Vegetables)."
+        elif effective_ph <= 7.3:
             ph_category = "Neutral"
-            ph_advice = "Balanced nutrient availability."
+            ph_advice = "Balanced nutrient availability and optimal microbial activity."
+        elif effective_ph <= 7.8:
+            ph_category = "Slightly Alkaline"
+            ph_advice = "Slightly alkaline. Monitor zinc and iron micronutrient availability."
         else:
-            ph_category = "Alkaline"
-            ph_advice = "Micronutrient availability may be restricted."
+            ph_category = "Moderately Alkaline"
+            ph_advice = "Alkaline soil. Micronutrient availability (Fe, Mn, Zn) may be restricted; consider organic amendments."
 
         return {
             "farm_id": farm_id,

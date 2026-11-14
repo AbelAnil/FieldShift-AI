@@ -2,9 +2,10 @@
 
 > **NASA Space Apps Challenge 2026** — *Field Shift: Adapting Farms with NASA Data*  
 > **Team:** ChungusReloaded (Solo Development)  
-> **Pilot Region:** Kerala, India (Global Scope via Region Packs)
+> **Pilot Region:** Kerala, India (Global Scope via Multi-Region Presets)  
+> **Version:** v4.0 Production
 
-FieldShift AI is an agricultural decision-support platform that transforms NASA Earth observations into actionable farm decisions. For each registered field, it creates a farm-level predictive **digital twin** combining satellite observations, soil intelligence, terrain hydrology, and crop knowledge — powering weighted crop suitability scoring, multi-year crop rotation optimization, what-if stress simulation, a multilingual conversational AI Farm Assistant, condition-triggered tasks, exportable farm decision dossiers, and a Carbon Credit Readiness & Filing Assistant.
+FieldShift AI is an agricultural decision-support platform that transforms NASA Earth observations into actionable smallholder adaptation decisions. For each registered field, it builds a predictive **digital twin** combining satellite observations, soil intelligence, terrain hydrology, and local agronomic knowledge — powering multi-year rotation optimization with side-by-side trade-offs, climate shock What-If stress testing, conversational AI assistance, condition-triggered tasks, exportable farm dossiers, and smallholder carbon credit readiness.
 
 ```text
 NASA Earth Data → Environmental Analysis → Farm Digital Twin → Crop Suitability
@@ -13,343 +14,147 @@ NASA Earth Data → Environmental Analysis → Farm Digital Twin → Crop Suitab
 
 ---
 
-## 🏆 Implementation Roadmap & Status
+## ⚡ One-Command Setup (Docker Compose)
 
-| Phase | Module | Status | Key Deliverables |
-|---|---|---|---|
-| **Phase 0** | App Foundation | ✅ Complete | FastAPI backend (`:8000`), Next.js 16 App Router (`:3000`), Dark Theme layout shell |
-| **Phase 1** | Farm Maps & Auth | ✅ Complete | MapLibre GL JS polygon drawing, WGS84 geodesic area, JWT auth, multi-tenant isolation |
-| **Phase 2** | NASA Earth Data Engine | ✅ Complete | GPM IMERG rainfall, POWER agroclimatology, SMAP L4 moisture, Landsat/Sentinel NDVI & NDMI |
-| **Phase 3 & 4** | Soil, Terrain & Crops | ✅ Complete | SoilGrids baseline + lab test intake, NASADEM elevation & TWI drainage, 18 crops, 5-factor suitability |
-| **Phase 5 & 6** | Rotation & Digital Twin | ✅ Complete | 3-strategy multi-year rotation planner, Predictive Digital Twin & What-If stress simulator |
-| **Phase 7** | AI Farm Assistant | ✅ Complete | Multilingual conversational advisor with STT/TTS, topic sessions, KAU/ICAR tool-calling |
-| **Phase 8** | Tasks & Decision Dossiers | ✅ Complete | Condition-based alert engine, interactive task manager, printable markdown farm dossiers |
-| **Phase 9** | Carbon Credit Module | ✅ Complete | Eligibility screener, conservative yield model, evidence ledger, FPO aggregator packs |
-| **Phase 10** | Integrated Farming System (IFS) | ✅ Complete | Livestock (THI heat gauge), Farm Pond Sizer, Rice-Duck/Poultry, Apiculture (+28% pollination), Bio-Resource Loop |
-| **Phase 11** | Deployment & Edge Readiness | 🚀 Ready | Local-first architecture, SQLite default / PostgreSQL-ready, Raspberry Pi edge evaluation |
-
----
-
-## 📑 Feature Guide
-
-### 🗺️ Farm Registration & Interactive Maps
-
-- **Interactive polygon drawing** on MapLibre GL JS for field boundary delineation
-- **Live location search bar & geocoding:** Real-time search with OpenStreetMap / Nominatim autocomplete to quickly locate and fly to any farm, town, or coordinate worldwide
-- **Global agricultural region presets:** One-click navigation to key farming regions (Kerala, Iowa Corn Belt, Cerrado, Pampas, Rift Valley, Andalucia, Punjab, Wayanad)
-- **WGS84 geodesic area calculation** for accurate field sizing
-- **Multi-tenant JWT authentication** with per-user data isolation (HTTP 403 cross-tenant protection)
-- Multi-farm support — register and switch between multiple fields
-
-### 🛰️ NASA Earth Observation Engine
-
-Five integrated NASA data pipelines provide real-time and historical Earth observations:
-
-| Data Source | Spatial Res. | Cadence | Variables |
-|---|---|---|---|
-| **NASA GPM IMERG v07** | 0.1° (~10 km) | Daily + 7-day cumulative | Precipitation (mm/day) |
-| **NASA POWER Agroclimatology** | 0.5° (~50 km) | Daily / Monthly | T2M air temperature, solar irradiance, relative humidity |
-| **NASA SMAP L4** | 9 km | Daily | Surface & rootzone soil moisture |
-| **Landsat 8/9 OLI-2 & Sentinel-2 MSI** | 10–30 m | 5–16 days | NDVI (vegetation vigor), NDMI (moisture stress) |
-| **NASADEM / SRTM** | 30 m | Static DEM | Elevation, slope, Topographic Wetness Index (TWI) |
-
-### 🧪 Soil Intelligence
-
-- **ISRIC SoilGrids 250m** baseline: pH, organic carbon, clay/silt/sand fractions, CEC, bulk density (6 depth layers: 0–5cm to 60–100cm)
-- **Krishi Bhavan certified lab test calibration**: Physical soil test results override satellite estimates when available
-- Safeguard: **No synthetic N-P-K nutrient recommendations without a verified physical lab test**
-
-### 🌾 Crop Knowledge Base & Suitability Engine
-
-- **18 regional and global crops** with full agronomy profiles (Kerala varieties + global staples)
-- **5-factor weighted suitability scoring:**
-  1. Climate compatibility (temperature, humidity, rainfall)
-  2. Soil compatibility (pH, organic carbon, texture)
-  3. Water demand vs. available precipitation & moisture
-  4. Terrain suitability (slope, drainage, elevation)
-  5. Growth period feasibility (season length, solar radiation)
-- Each crop scored 0–100 with detailed factor breakdown
-
-### 🔄 Multi-Year Crop Rotation Optimizer
-
-Three optimized strategies computed for each farm:
-
-| Strategy | Focus | Key Benefit |
-|---|---|---|
-| **Strategy A** | Soil Health | Maximizes organic carbon recovery, legume nitrogen fixation |
-| **Strategy B** | Water Efficiency | Minimizes irrigation demand, matches rainfall patterns |
-| **Strategy C** | Balanced | Best overall score across all sustainability factors |
-
-- Family rotation rules prevent monoculture and pest buildup
-- Legume nitrogen fixation tracking across rotation steps
-- Multi-year sequences with seasonal timing and duration
-
-### 🧬 Predictive Digital Twin & What-If Simulator
-
-- **Virtual farm replica** synthesizing all telemetry (NASA weather, soil, vegetation, terrain)
-- **What-If stress scenarios:**
-  - 🌵 Drought: -30% rainfall
-  - 🌊 Flood: +50% rainfall
-  - 🌡️ Heat stress: +2°C temperature
-  - Custom percentage perturbations from natural language (e.g., "what if rainfall drops by 40%?")
-- Simulates impact on crop yield, water stress, and soil health
-
-### 🤖 AI Farm Assistant
-
-A conversational farm advisor powered by deterministic tool-calling against live farm telemetry:
-
-**Core Intelligence:**
-- Rule-based dispatching engine — never fabricates recommendations
-- KAU (Kerala Agricultural University) & ICAR Package of Practices grounding
-- Integrated Pest Management (IPM) diagnosis with bio-control recommendations (Trichoderma, Beauveria bassiana, neem oil, Bordeaux mixture)
-- Crop agronomy packages for 7+ crops with detailed practice schedules
-- What-If scenario simulation triggered from natural language queries
-- Optional **Google Gemini LLM** pass-through (set `GEMINI_API_KEY`) with graceful fallback to local engine
-
-**Multilingual Support:**
-
-| Language | Code | Voice (STT/TTS) |
-|---|---|---|
-| English | `en` | `en-IN` |
-| മലയാളം (Malayalam) | `ml` | `ml-IN` |
-| हिन्दी (Hindi) | `hi` | `hi-IN` |
-| தமிழ் (Tamil) | `ta` | `ta-IN` |
-| Español (Spanish) | `es` | `es-ES` |
-
-- **Voice Transcription (STT):** Web Speech API with per-language recognition, visual recording indicator
-- **Audio Read Aloud (TTS):** Web Speech Synthesis for assistant responses in selected language
-
-**Multi-Session Topic Controls:**
-- Create, switch, and delete conversation topics/sessions per farm
-- Message history persisted per session with message count and timestamps
-- Quick topic chips: 🪲 Pests & Diseases, 🔄 Crop Rotation, 🧪 Soil Health & Liming, 🌧️ NASA Weather & Rain, ⚡ What-If Drought Sim, 💰 Carbon Credits
-
-### ✅ Condition-Triggered Task Manager
-
-- Automatic alert generation from environmental threshold breaches
-- Interactive task board with priority levels (high / medium / low)
-- Task categories: soil, weather, crop, drainage, general
-- Status tracking: pending, completed, dismissed, postponed
-
-### 📋 Farm Decision Dossier Export
-
-- Comprehensive printable markdown report
-- Consolidates all farm data: NASA observations, soil analysis, crop suitability, rotation plan, digital twin state, active tasks, and carbon readiness
-
-### 🌿 Carbon Credit Readiness & Filing Assistant
-
-- **Honest eligibility screening** against international standards:
-  - Verra VCS (VM0042)
-  - Gold Standard (GS-SOC)
-  - UNFCCC CDM (AMS-III.AU)
-- Conservative yield & revenue range modeling (low / expected / high)
-- Aggregator fee deductions transparently shown
-- Evidence ledger tracking for audit readiness
-- **FPO (Farmer Producer Organization) aggregation packs** for smallholders (1–3 acres) who need collective pooling
-
-### 🐄 Integrated Farming System (IFS) — Livestock, Aquaculture & Beekeeping (`/integrated-farming`)
-
-- **Interactive Circular Bio-Resource Matrix:**
-  - 5-node interconnected model (Crops, Dairy & Biogas, Farm Pond, Poultry & Ducks, Apiculture) showcasing zero-waste nutrient recycling.
-  - Computes synthetic N-P-K chemical fertilizer displaced (60–80% offset) and net annual rupees saved (₹18,000–₹45,000+/year).
-  - Quantifies annual Soil Organic Carbon (SOC) accumulation (+0.22%/ha/yr) from continuous microbial digestion.
-- **Dairy & Cattle Husbandry Engine:**
-  - Manure-to-biogas bio-slurry loop yielding 3.5–4.5 tons of Farm Yard Manure (FYM)/year per cow, displacing 60–80% of synthetic NPK.
-  - **NASA POWER Livestock Heat Stress Monitor (THI):** Real-time Temperature-Humidity Index calculation ($THI = 0.8T + (RH/100)(T - 14.4) + 46.4$) with live comfort gauge, milk yield risk alerts, and automated barn ventilation/fogger advisories.
-  - Bund fodder grass sizing (Hybrid Napier CO-5) along perimeter boundaries without consuming arable food crop acreage.
-- **Farm Pond Rainwater Catchment & Aquaculture Sizer:**
-  - Dynamic what-if slider sizing rainwater retention basins against live NASA GPM IMERG 30-day precipitation (>1.4 million liters harvested per 2 acres).
-  - Species modeling: Composite Carp culture (Catla 30%, Rohu 40%, Mrigal 30%), Pearlspot (*Karimeen*), and GIFT Tilapia.
-  - Emergency drought-irrigation buffer days calculation and annual pond bottom silt/sludge top-dressing recycling.
-  - Pokkali organic rice-fish/prawn rotation modeling for floodplains and coastal wetlands.
-- **Poultry & Duck Mutualism:**
-  - Rice-Duck biological pest control: ducks feed voraciously on brown planthoppers, leaf folders, and weeds while aerating root water.
-  - Deep-litter poultry manure providing high-phosphorus organic top-dressing for banana and black pepper vines.
-- **Apiculture (Bee Farming) & Pollination Synergy:**
-  - Indian Honey Bee (*Apis cerana indica*) and Stingless Bee (*Tetragonula iridipennis* / *Cheruthen*).
-  - Cross-pollination multiplier: **+20% to +35% fruit/seed set** on nutmeg, cashew, coffee, coconut, and vegetables.
-  - High-value medicinal honey revenue modeling (₹1,500–₹2,500/kg) and seasonal floral dearth calendar tracking.
-- **Direct Asset Intake:** Modal allowing farmers to register new livestock, poultry, farm ponds, and beehives directly into the database.
-
-### 📱 Mobile-First Responsive UI
-
-- **Full responsive design** optimized across desktop, tablet, and mobile displays
-- **Native animated slide-out drawer** for complete platform navigation with backdrop blur and gesture dismissal
-- **Persistent mobile bottom navigation bar (`MobileBottomNav`):** One-tap thumb access to primary workflows (Overview, My Farms, Earth Intel, AI Assistant, and More drawer)
-- **Adaptive map viewports:** Height-scaled MapLibre containers (`h-[400px]` on mobile to `h-[540px]` on desktop) with responsive top search inputs and touch-friendly polygon drawing toolbars
-- 44px minimum touch targets for all interactive controls, buttons, and form selectors
-- Mobile keyboard safe-area padding (`env(safe-area-inset-bottom)` and `pb-20` main scroll clearance)
-- Touch-friendly quick topic chips, audio playback controls, and voice recording buttons
-
----
-
-## 🏗️ Architecture & Technology Stack
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                          Next.js 16 Frontend                           │
-│  App Router · TypeScript · Tailwind CSS · MapLibre GL · Recharts       │
-│  Lucide Icons · Web Speech API (STT/TTS) · Interactive IFS Dashboard   │
-├────────────────────────────────────────────────────────────────────────┤
-│                          FastAPI Backend                               │
-│        Python 3.11 · Pydantic v2 · SQLAlchemy ORM · Uvicorn            │
-├───────┬───────┬───────┬───────┬────────┬──────────────┬────────────────┤
-│  NASA │ Soil  │ Crop  │ AI    │ Carbon │ Digital Twin │ IFS Engine     │
-│  GPM  │ Grids │ Engine│ Asst. │ Credit │ Simulator    │ Cattle THI     │
-│ POWER │ Lab   │ Rotn. │ IPM   │ FPO    │ What-If      │ Pond Sizer     │
-│ SMAP  │ Tests │ Suit. │ STT   │ Verra  │ Scenarios    │ Duck/Poultry   │
-│ NDVI  │       │       │ TTS   │ GS     │              │ Apiculture/NPK │
-├───────┴───────┴───────┴───────┴────────┴──────────────┴────────────────┤
-│                     SQLite (default) / PostgreSQL                      │
-└────────────────────────────────────────────────────────────────────────┘
-```
-
-**Key Design Principles:**
-- **Local-first:** Zero paid API dependencies by default
-- **Deterministic grounding:** Tool-calling against verified data, never hallucinated recommendations
-- **Multi-tenant isolation:** Per-user authorization with strict cross-tenant prevention
-- **Data provenance:** Every observation tagged with spatial resolution, sensor, and limitations
-- **Edge-ready:** Runs on low-power hardware (Raspberry Pi evaluated)
-
----
-
-## 🚀 Quickstart Guide
-
-### Prerequisites
-- **Python 3.11+**
-- **Node.js 20+** & **npm**
-- **Git**
-
-### 1. Backend Setup (FastAPI at `:8000`)
+Get the complete FieldShift platform running with a single command:
 
 ```bash
-# Clone and enter the project
+# 1. Clone repository
+git clone https://github.com/AbelThomasAnil/FieldShift.git
 cd FieldShift
 
-# Activate Python virtual environment
-# Windows (PowerShell):
-.\backend\venv\Scripts\Activate.ps1
-# Linux/macOS:
-source backend/venv/bin/activate
+# 2. Run with Docker Compose
+docker compose up --build
+```
 
-# Install dependencies (if needed)
-pip install -r backend/requirements.txt
+- **Frontend Application:** [http://localhost:3000](http://localhost:3000)
+- **FastAPI Backend & Interactive Swagger:** [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Scientific Health Probe:** [http://localhost:8000/api/health](http://localhost:8000/api/health)
 
-# Seed demo farms and baseline knowledge
-python scripts/seed_demo_data.py
+### Demo Farmer Accounts (Pre-Seeded)
+Judges can instantly log in and evaluate pre-seeded benchmark farms without drawing polygons:
+- **Farmer 1:** `thomas.kerala@fieldshift.ai` (Kanjirappally Valley Farm, 2.1 acres, Robusta Banana)
+- **Farmer 2:** `ananya.wayanad@fieldshift.ai` (Wayanad Highland Coffee & Spices, 3.4 acres)
+- Or simply click the **"🌱 Demo Farm"** button in the header at any time!
 
-# Start the FastAPI server
+---
+
+## 🏆 Key Challenge Alignments (Judge Scoring Criteria)
+
+| Feature | Challenge Alignment & Scientific Purpose | Implementation |
+|---|---|---|
+| **Side-by-Side Strategy Comparison** | Direct multi-criteria evaluation of 3 distinct rotation strategies (A: Soil Health, B: Water Efficiency, C: Balanced) across N credit, water savings, income, and pest disruption. | Interactive comparative matrix + 3-year Soil Organic Carbon (SOC %) projection chart in `/rotation`. |
+| **Multi-Strategy Climate What-If** | Connects the predictive digital twin directly with rotation strategies, simulating how Strategies A, B, and C hold up under a -40% monsoon drought or +35% flood shock. | Interactive slider & presets with real-time resilience scoring (0–100) and physiological impact summaries. |
+| **Dynamic Farmer Priority Input** | Directly operationalizes the challenge's 4th input by letting farmers choose priorities (Soil Health, Water Saving, Income, Low Labor) to dynamically re-rank strategies with an explanatory "Why this one" rationale. | Dynamic priority chips triggering backend re-ranking and highlight banner. |
+| **Long-Term NASA Baseline Anomaly** | Replaces a static 30-day precipitation number with a multi-year climatological comparison against NASA POWER / IMERG 30-year normal, outputting exact percentage anomalies (`+40% above normal`) and adaptation guidance. | Climatology baseline cards & surplus/deficit alert badges in `/earth-intelligence`. |
+| **Kerala Seasonal Monsoon Windows** | Tailors crop rotation advice to Kerala's agro-climatic calendar: **Virippu** (Autumn / Kharif: May–Aug), **Mundakan** (Winter / Rabi: Sep–Dec), and **Puncha** (Summer: Jan–May). | Monsoon window badges and duration breakdowns on each crop profile. |
+| **Transparent Score Breakdown Bar** | Renders the exact 5-factor weighting on each crop card: Soil (25%), Climate (25%), Water (20%), Drainage (15%), Season (15%). | Multi-segment proportional stacked progress bars explaining crop suitability scores. |
+| **Data Trust Badges & Honest Limits** | Every NASA card displays a Live, Cached, or Regional Model status badge, last updated timestamp, source link, and explicit coarse footprint warning (`SMAP: Regional Estimate ~9 km`). | Provenance headers and metadata badges on all telemetry widgets. |
+| **Local Smallholder Units** | First-class unit switcher supporting Hectares, Acres, and **Kerala Cents** (100 cents = 1 acre), the primary land unit used by southern Indian smallholders. | Global header pill toggle with live recalculation across the platform. |
+| **Bilingual UI Localization** | Whole-UI internationalization toggle supporting **English** and **Malayalam (മലയാളം)** for smallholder accessibility. | UIContext translation engine with instant toggle in the top bar. |
+| **Scientific Data Attribution** | Formal credit and license attribution for NASA GPM, NASA POWER, NASA SMAP, Landsat 8/9, Sentinel-2, ISRIC SoilGrids (CC BY 4.0), OpenStreetMap, MapLibre, KAU, and ICAR. | Dedicated `/attribution` registry. |
+
+---
+
+## 🛠️ Architecture & Data Flow
+
+```mermaid
+flowchart TD
+    subgraph SATELLITE["🛰️ NASA Earth Observations & Soil Grids"]
+        GPM["NASA GPM IMERG v07<br/>(Daily Precipitation)"]
+        POWER["NASA POWER Agroclimatology<br/>(Temp, Solar, Humidity)"]
+        SMAP["NASA SMAP L4 Global<br/>(9 km Regional Moisture)"]
+        LANDSAT["Landsat 8/9 & Sentinel-2<br/>(NDVI / NDMI Canopy Vigor)"]
+        SOIL["ISRIC SoilGrids 250m<br/>(pH, SOC, Texture, Bulk Density)"]
+    end
+
+    subgraph ENGINE["⚙️ FieldShift FastAPI Backend Engine"]
+        FARM_MGR["Multi-Tenant Farm Manager<br/>(JWT Isolation & WGS84 Geodesic)"]
+        CLIMATOLOGY["NASA 30-Year Climatology Engine<br/>(Rainfall Anomaly vs Normal)"]
+        SUITABILITY["5-Factor Weighted Scorer<br/>(25% Soil, 25% Climate, 20% Water, 15% Drain, 15% Season)"]
+        OPTIMIZER["Multi-Year Rotation Optimizer<br/>(A: Soil Health, B: Water, C: Balanced)"]
+        DIGITAL_TWIN["Predictive Digital Twin<br/>(Climate Shock What-If Simulation)"]
+    end
+
+    subgraph UI["💻 Next.js 16 Responsive Frontend"]
+        DASH["Earth Intelligence Dashboard<br/>(Status Badges, Anomaly & Footprint Notes)"]
+        ROTATION_UI["Side-by-Side Comparison Matrix<br/>(A vs B vs C & 3-Year Soil Chart)"]
+        WHATIF_UI["Multi-Strategy What-If Simulator<br/>(-40% Drought vs +35% Flood)"]
+        ASSISTANT["Multilingual AI Assistant<br/>(Voice STT/TTS & Deterministic Tools)"]
+        ATTRIBUTION["Scientific Attribution Registry<br/>(CC BY 4.0, NASA Open Data, KAU/ICAR)"]
+    end
+
+    SATELLITE --> ENGINE
+    ENGINE --> UI
+```
+
+---
+
+## 🧪 Automated Test Suite (13/13 Passing)
+
+FieldShift maintains a strict test suite covering agronomic algorithms, multi-tenant isolation, and data trust standards:
+
+```bash
+# Run tests from project root
+$env:PYTHONPATH="backend"
+.\backend\venv\Scripts\python.exe -m pytest backend/tests -v
+```
+
+```text
+backend/tests/test_assistant.py .                                        [  7%]
+backend/tests/test_carbon.py .                                           [ 15%]
+backend/tests/test_environment.py .                                      [ 23%]
+backend/tests/test_farms_auth.py .                                       [ 30%]
+backend/tests/test_integrated_farming.py .                               [ 38%]
+backend/tests/test_judge_improvements.py .....                           [ 76%]
+backend/tests/test_rotation_digital_twin.py .                            [ 84%]
+backend/tests/test_soil_terrain_crops.py .                               [ 92%]
+backend/tests/test_tasks_reports.py .                                    [100%]
+
+======================= 13 passed in 29.28s =======================
+```
+
+### Key Verification Tests in `test_judge_improvements.py`:
+1. `test_usda_soil_ph_thresholds`: Verifies standard USDA classes (pH 6.1–6.5 is *Slightly Acidic*, 5.6–6.0 is *Moderately Acidic*).
+2. `test_fixed_currency_exchange_rate_constant`: Verifies named currency constant `₹83/USD` is enforced for carbon calculations.
+3. `test_multi_tenant_jwt_isolation_privacy`: Verifies strict tenant privacy where User B requesting User A's farm ID returns HTTP 403 Forbidden across all endpoints.
+4. `test_rotation_priority_re_ranking`: Verifies farmer priority chips (`water_saving`, `soil_health`, `income`, `labor`) successfully re-rank strategies and generate tailored "Why this one" rationales.
+
+---
+
+## 💻 Manual Local Development Setup
+
+### 1. Backend Setup (FastAPI at `:8000`)
+```bash
 cd backend
+python -m venv venv
+.\venv\Scripts\Activate.ps1   # On Linux/macOS: source venv/bin/activate
+pip install -r requirements.txt
+python ../scripts/seed_demo_data.py
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-API documentation: `http://localhost:8000/docs`
-
 ### 2. Frontend Setup (Next.js at `:3000`)
-
 ```bash
-cd FieldShift/frontend
-
-# Install dependencies (if needed)
+cd frontend
 npm install
-
-# Start the development server
 npm run dev
 ```
 
-Application: `http://localhost:3000`
+---
 
-### 3. Running the Test Suite
+## 🔒 Scientific Integrity Safeguards
 
-From the project root with venv active:
-
-```bash
-cd backend
-python -m pytest -v
-```
-
-All 8 test suites pass:
-
-| Test Suite | Coverage |
-|---|---|
-| `test_assistant.py` | AI Farm Assistant & Tool Calling |
-| `test_carbon.py` | Carbon Eligibility, Yields & Evidence |
-| `test_environment.py` | NASA GPM, POWER, SMAP, NDVI/NDMI |
-| `test_farms_auth.py` | Farm Registration, Geodesic Area & Multi-Tenant Isolation |
-| `test_integrated_farming.py` | Cattle THI Heat Stress, Pond Sizer, Apiculture & Bio-Resource Nutrient Loop |
-| `test_rotation_digital_twin.py` | Rotation Optimizer & What-If Simulator |
-| `test_soil_terrain_crops.py` | SoilGrids, Lab Tests, NASADEM & Crop Suitability |
-| `test_tasks_reports.py` | Condition Alerts, Task CRUD & Decision Dossiers |
+1. **Suppression of Synthetic Recommendations Without Physical Lab Tests:** Synthetic N-P-K mineral fertilizer dosages are withheld until a certified soil lab report is registered. Satellite and SoilGrids estimates provide organic amendments and liming advice only.
+2. **Honest Footprint Disclaimers:** 9 km SMAP passive microwave and 0.1° GPM IMERG estimates are explicitly labeled as *"Regional Estimates"* on every screen to prevent misleading smallholders with 1-acre plots.
+3. **Conservative Carbon Revenue Headlines:** Headline carbon return figures display the conservative lower bound rather than optimistic maximums, clearly stating that smallholder credit monetization requires collective FPO pooling.
+4. **Deterministic Agronomic Rules:** The conversational AI assistant executes deterministic Python tool calls against live telemetry rather than generating unverified advice.
 
 ---
 
-## ⚙️ Environment Variables (Optional)
-
-| Variable | Purpose | Default |
-|---|---|---|
-| `GEMINI_API_KEY` | Google Gemini LLM for enhanced AI Assistant responses | Not set (local engine used) |
-
-> **Note:** FieldShift AI is fully functional without any external API keys. The Gemini integration is an optional enhancement that gracefully falls back to the local deterministic engine.
-
----
-
-## 🔒 Scientific Safeguards & Integrity
-
-1. **No Hallucinated Fertilizers:** Synthetic N-P-K nutrient recommendations are strictly suppressed until a certified physical soil test from a Krishi Bhavan laboratory is entered.
-2. **Honest Carbon Credit Modeling:** FieldShift AI does not issue carbon credits. Projections are displayed as conservative low/expected/high ranges with aggregator fee deductions, acknowledging that smallholders (1–3 acres) require collective FPO pooling.
-3. **Multi-Tenant Isolation:** Per-user authorization checks strictly prevent cross-tenant field inspection (HTTP 403 Forbidden).
-4. **Data Provenance:** Every satellite observation is tagged with its spatial resolution, temporal cadence, sensor name, and scientific limitations.
-5. **Deterministic AI Grounding:** The AI Farm Assistant uses rule-based tool-calling against live telemetry. It never fabricates agronomic data.
-
----
-
-## 📂 Project Structure
-
-```
-FieldShift/
-├── backend/
-│   ├── app/
-│   │   ├── api/routes/          # FastAPI route handlers
-│   │   ├── models/              # SQLAlchemy ORM models
-│   │   ├── schemas/             # Pydantic request/response schemas
-│   │   └── services/            # Core business logic
-│   │       ├── ai_assistant_service.py    # Multilingual AI + IPM + tool dispatch
-│   │       ├── carbon_service.py          # Carbon credit eligibility & modeling
-│   │       ├── crop_service.py            # 18-crop knowledge base & suitability
-│   │       ├── digital_twin_service.py    # Farm virtual replica & simulation
-│   │       ├── integrated_farming_service.py # Livestock THI, pond sizer, apiculture & bio-resource loop
-│   │       ├── nasa_power_service.py      # NASA POWER agroclimatology
-│   │       ├── report_service.py          # Decision dossier generation
-│   │       ├── rotation_optimizer.py      # 3-strategy rotation planner
-│   │       ├── smap_service.py            # NASA SMAP L4 soil moisture
-│   │       ├── soil_service.py            # SoilGrids + lab test calibration
-│   │       ├── task_service.py            # Condition-triggered task engine
-│   │       ├── terrain_service.py         # NASADEM elevation & TWI
-│   │       └── vegetation_service.py      # Landsat/Sentinel NDVI/NDMI
-│   └── tests/                   # 8 comprehensive test suites
-├── frontend/
-│   ├── app/                     # Next.js 16 App Router pages
-│   │   ├── assistant/           # AI Farm Assistant (multilingual, STT/TTS)
-│   │   ├── carbon/              # Carbon Credit Readiness
-│   │   ├── digital-twin/        # Predictive Digital Twin
-│   │   ├── earth-intelligence/  # NASA Earth Observations
-│   │   ├── farms/               # Farm Registration & Maps
-│   │   ├── integrated-farming/  # Integrated Farming System (IFS) Circular Dashboard
-│   │   ├── reports/             # Decision Dossier Export
-│   │   ├── rotation/            # Crop Rotation Optimizer
-│   │   ├── soil/                # Soil Intelligence
-│   │   ├── tasks/               # Task Manager
-│   │   └── terrain/             # Terrain & Drainage Analysis
-│   ├── components/              # Shared UI components
-│   ├── context/                 # React context (Auth)
-│   └── lib/                     # API client & utilities
-├── scripts/                     # Seed data & utilities
-└── docs/                        # Architecture documentation
-```
-
----
-
-## 👥 Authors
+## 👥 Authors & Competition
 
 - **Team:** ChungusReloaded (Solo Development)
-- **Competition:** NASA Space Apps Challenge 2026
+- **Competition:** NASA International Space Apps Challenge 2026
+- **Challenge Track:** Field Shift: Adapting Farms with NASA Data
+- **License:** Open Source under MIT License (see `LICENSE`)

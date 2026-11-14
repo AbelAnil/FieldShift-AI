@@ -350,12 +350,12 @@ class IntegratedFarmingService:
                 {
                     "source": "Apiculture Colonies",
                     "destination": "Field Canopies (Nutmeg, Coconut, Veggies)",
-                    "benefit": "+20% to +35% fruit set cross-pollination bonus while foraging on plantation blossoms.",
+                    "benefit": "+28% cross-pollination fruit set boost while foraging on plantation blossoms.",
                 },
                 {
                     "source": "Rainwater Retention Farm Pond",
                     "destination": "Composite Fish & Emergency Irrigation",
-                    "benefit": "Stores >1.4 million litres of monsoon runoff; fertile pond bottom silt provides nutrient-rich annual topsoil dressing.",
+                    "benefit": "Stores 2.7 lakh litres (270 m³) of monsoon runoff; fertile pond bottom silt provides nutrient-rich annual topsoil dressing.",
                 },
             ],
         }

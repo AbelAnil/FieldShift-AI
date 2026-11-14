@@ -40,6 +40,9 @@ import {
 } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 
+// Fixed currency exchange rate constant (matches backend CarbonService.FIXED_EXCHANGE_RATE_INR_PER_USD)
+const FIXED_EXCHANGE_RATE_INR_PER_USD = 83.0;
+
 export default function CarbonCreditsPage() {
   const { farms, selectedFarm, selectFarm, token, isBackendOnline } = useAuth();
   const [pathways, setPathways] = useState<CarbonPathway[]>([]);
@@ -365,7 +368,7 @@ export default function CarbonCreditsPage() {
                         : "bg-red-950/80 border-red-800 text-red-300"
                     }`}
                   >
-                    {eligibility.status.replace("_", " ")}
+                    {eligibility.status === "eligible" ? "Preliminary: Criteria Met" : eligibility.status.replace("_", " ")}
                   </span>
                 </div>
               )}
@@ -615,15 +618,16 @@ export default function CarbonCreditsPage() {
 
               {/* Net Farmer Revenue Range in INR */}
               <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-950/60 to-zinc-900 border border-emerald-800/80 space-y-2">
-                <div className="text-[10px] font-mono uppercase text-emerald-400 font-semibold tracking-wider">
-                  Projected Net Annual Return (Farmer Share)
+                <div className="text-[10px] font-mono uppercase text-emerald-400 font-semibold tracking-wider flex items-center justify-between">
+                  <span>Projected Net Return (Conservative Headline)</span>
+                  <span className="text-[10px] text-zinc-400 font-mono">Assumes ₹{FIXED_EXCHANGE_RATE_INR_PER_USD}/USD</span>
                 </div>
                 <div className="text-2xl font-bold text-white">
-                  ₹{estimate.net_farmer_inr_range.low.toLocaleString()} – ₹{estimate.net_farmer_inr_range.high.toLocaleString()}
-                  <span className="text-xs text-zinc-400 font-normal"> / year</span>
+                  ₹{estimate.net_farmer_inr_range.low.toLocaleString()}
+                  <span className="text-xs text-zinc-400 font-normal"> / year (Conservative Low Estimate)</span>
                 </div>
-                <div className="text-[11px] text-zinc-400 font-mono">
-                  Expected: ₹{estimate.net_farmer_inr_range.expected.toLocaleString()} / year (after {commissionPct}% fee)
+                <div className="text-xs text-zinc-300 font-mono">
+                  Full Range: ₹{estimate.net_farmer_inr_range.low.toLocaleString()} – ₹{estimate.net_farmer_inr_range.high.toLocaleString()} / yr (Expected: ₹{estimate.net_farmer_inr_range.expected.toLocaleString()} after {commissionPct}% fee)
                 </div>
               </div>
 
@@ -638,7 +642,7 @@ export default function CarbonCreditsPage() {
           <div className="rounded-3xl bg-zinc-900/40 border border-zinc-800 p-6 space-y-4">
             <div className="flex items-center gap-2 text-white font-bold text-sm">
               <Building2 className="w-4 h-4 text-emerald-400" />
-              <span>Accredited Aggregators for Kerala</span>
+              <span>FPO Pooling & Carbon Aggregator Network (Illustrative Sample Data)</span>
             </div>
 
             <div className="space-y-3">

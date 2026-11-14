@@ -18,6 +18,7 @@ class CarbonService:
     Provides honest eligibility screening, conservative range estimates,
     evidence gap analysis, and aggregation dossiers for smallholders in Kerala.
     """
+    FIXED_EXCHANGE_RATE_INR_PER_USD: float = 83.0
 
     PATHWAYS = [
         {
@@ -342,8 +343,8 @@ class CarbonService:
         net_usd_expected = round(gross_expected * retention_factor, 2)
         net_usd_high = round(gross_high * retention_factor, 2)
 
-        # Financials (INR, assumed 1 USD = 83 INR)
-        usd_to_inr = 83.0
+        # Financials (INR, named constant fixed exchange rate)
+        usd_to_inr = cls.FIXED_EXCHANGE_RATE_INR_PER_USD
         net_inr_low = round(net_usd_low * usd_to_inr, 0)
         net_inr_expected = round(net_usd_expected * usd_to_inr, 0)
         net_inr_high = round(net_usd_high * usd_to_inr, 0)
@@ -357,10 +358,10 @@ class CarbonService:
         )
 
         reality_note = (
-            f"On your {farm.total_area_acres:.1f}-acre holding ({ha:.2f} ha), annual gross credit generation is estimated at "
-            f"~{expected_tco2e:.1f} tonnes CO2e. At an assumed market price of ${carbon_price_usd:.0f}/t and {developer_commission_pct:.0f}% developer/verifier "
-            f"fees, projected net farmer return is approximately ₹{net_inr_expected:,.0f} per year. Carbon finance should be viewed as a supplementary incentive "
-            f"for sustainable soil stewardship, not a primary crop replacement income."
+            f"Headline Target: Conservative low estimate of {low_tco2e:.1f} tonnes CO2e/yr on your {farm.total_area_acres:.1f}-acre holding ({ha:.2f} ha) "
+            f"represents the safest baseline filing target. At an assumed market price of ${carbon_price_usd:.0f}/t and {developer_commission_pct:.0f}% developer/verifier "
+            f"fees (assumes ₹{cls.FIXED_EXCHANGE_RATE_INR_PER_USD:.0f}/USD), projected net farmer return is ₹{net_inr_low:,.0f} to ₹{net_inr_expected:,.0f} per year. "
+            f"Carbon finance should be viewed as a supplementary incentive for sustainable soil stewardship, not a primary crop replacement income."
         )
 
         # Upsert record in DB
@@ -456,6 +457,23 @@ class CarbonService:
         description: Optional[str] = None,
         metadata_json: Optional[Dict[str, Any]] = None,
     ) -> CarbonEvidence:
+        existing = (
+            db.query(CarbonEvidence)
+            .filter(
+                CarbonEvidence.farm_id == farm_id,
+                CarbonEvidence.title == title,
+            )
+            .first()
+        )
+        if existing:
+            existing.pathway = pathway
+            existing.evidence_type = evidence_type
+            existing.description = description
+            existing.metadata_json = metadata_json
+            db.commit()
+            db.refresh(existing)
+            return existing
+
         item = CarbonEvidence(
             farm_id=farm_id,
             pathway=pathway,

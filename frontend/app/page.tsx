@@ -301,7 +301,7 @@ export default function Home() {
                 <RotateCcw className="w-4 h-4" />
               </div>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 group-hover:text-purple-300">
-                12 Kerala Crops
+                18 Kerala & Global Crops
               </span>
             </div>
             <div>
@@ -424,10 +424,10 @@ export default function Home() {
         <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
           <div className="flex items-center gap-2 text-white font-bold text-sm">
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            <span>NASA Space Apps 2026 Implementation Roadmap (Consolidated v4.0)</span>
+            <span>NASA Space Apps 2026 Implementation Roadmap (Consolidated v4.0 Release)</span>
           </div>
           <span className="text-xs font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800 px-2.5 py-0.5 rounded-full">
-            11 / 11 Phases Built
+            9 of 11 Complete • 2 Pilot Deployments Active
           </span>
         </div>
 

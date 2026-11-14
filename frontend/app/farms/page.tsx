@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 
 const FarmMap = dynamic(() => import("@/components/FarmMap"), {
   ssr: false,
@@ -33,6 +34,10 @@ import {
   X,
   Droplets,
   Calendar,
+  ArrowRight,
+  FileText,
+  Satellite,
+  RotateCcw,
 } from "lucide-react";
 
 export default function FarmsPage() {
@@ -226,161 +231,239 @@ export default function FarmsPage() {
         </div>
       </div>
 
-      {/* Map Section */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs text-zinc-400 px-1">
-          <span>Interactive Map (MapLibre GL JS) • Click any polygon to inspect farm details</span>
-          {isDrawingMode && <span className="text-emerald-400 font-bold animate-pulse">Drawing mode active</span>}
-        </div>
-        <FarmMap
-          farms={farms}
-          selectedFarm={selectedFarm}
-          onSelectFarm={(f) => setSelectedFarm(f)}
-          isDrawingMode={isDrawingMode}
-          onPolygonCreated={handlePolygonDrawn}
-        />
-      </div>
-
-      {/* Farm List & Selected Farm Details */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
-        {/* Left: Farm Cards List */}
-        <div className="lg:col-span-2 space-y-4">
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <span>Farms for {currentUser?.name}</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 font-mono">
-              {farms.length}
-            </span>
-          </h2>
-
-          {loading ? (
-            <div className="p-8 text-center text-zinc-500 text-sm">Loading registered farms...</div>
-          ) : farms.length === 0 ? (
-            <div className="p-8 text-center rounded-2xl bg-zinc-900/40 border border-zinc-800 text-zinc-400 text-sm">
-              No farms registered for this farmer yet. Click <strong>Register Farm</strong> or <strong>Draw Boundary</strong> to add one.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {farms.map((farm) => {
-                const isSelected = selectedFarm?.id === farm.id;
-                return (
-                  <div
-                    key={farm.id}
-                    onClick={() => setSelectedFarm(farm)}
-                    className={`p-5 rounded-2xl border transition-all cursor-pointer space-y-3 ${
-                      isSelected
-                        ? "bg-zinc-900/90 border-emerald-500/60 shadow-lg shadow-emerald-950/30"
-                        : "bg-zinc-900/40 border-zinc-800 hover:border-zinc-700"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-bold text-sm text-zinc-100">{farm.farm_name}</h3>
-                        <p className="text-xs text-zinc-400 flex items-center gap-1 mt-1">
-                          <MapPin className="w-3.5 h-3.5 text-emerald-400" />
-                          <span className="truncate max-w-[200px]">{farm.location_name}</span>
-                        </p>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteFarm(farm.id);
-                        }}
-                        className="p-1 text-zinc-500 hover:text-rose-400 rounded transition"
-                        title="Delete farm"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 text-xs pt-1">
-                      <div className="p-2.5 rounded-xl bg-zinc-950 border border-zinc-800">
-                        <div className="text-[10px] text-zinc-500">Geodesic Area</div>
-                        <div className="font-bold text-emerald-400 mt-0.5">
-                          {farm.total_area_hectares} ha
-                        </div>
-                      </div>
-                      <div className="p-2.5 rounded-xl bg-zinc-950 border border-zinc-800">
-                        <div className="text-[10px] text-zinc-500">Current Crop</div>
-                        <div className="font-semibold text-zinc-200 mt-0.5 truncate">
-                          {farm.current_crop || "None"}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between text-[11px] text-zinc-400 pt-2 border-t border-zinc-800/80">
-                      <span>Coordinates: {farm.latitude.toFixed(3)}°N, {farm.longitude.toFixed(3)}°E</span>
-                      <span className="text-emerald-400 font-medium">PostGIS Poly</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+      {/* Main Workspace: Interactive Map & Field Dossier (Side-by-Side) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left (7 cols): Interactive Map */}
+        <div className="lg:col-span-7 space-y-2">
+          <div className="flex items-center justify-between text-xs text-zinc-400 px-1">
+            <span>Interactive Map (MapLibre GL JS) • Click any polygon to inspect plot</span>
+            {isDrawingMode && <span className="text-emerald-400 font-bold animate-pulse">Drawing mode active</span>}
+          </div>
+          <FarmMap
+            farms={farms}
+            selectedFarm={selectedFarm}
+            onSelectFarm={(f) => setSelectedFarm(f)}
+            isDrawingMode={isDrawingMode}
+            onPolygonCreated={handlePolygonDrawn}
+          />
         </div>
 
-        {/* Right: Selected Farm Detailed Inspector */}
-        <div className="space-y-4">
-          <h2 className="text-base font-bold text-white">Field Dossier</h2>
+        {/* Right (5 cols): Adjacent Field Dossier */}
+        <div className="lg:col-span-5 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <Layers className="w-4 h-4 text-emerald-400" />
+              <span>Field Dossier</span>
+            </h2>
+            {selectedFarm && (
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-800 text-emerald-300">
+                Active Selection
+              </span>
+            )}
+          </div>
+
           {selectedFarm ? (
-            <div className="p-6 rounded-2xl bg-zinc-900/60 border border-zinc-800 space-y-4 text-xs">
-              <div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-400">
-                  {selectedFarm.id}
-                </span>
-                <h3 className="text-lg font-bold text-zinc-100 mt-2">{selectedFarm.farm_name}</h3>
-                <p className="text-zinc-400 mt-1">{selectedFarm.location_name}</p>
+            <div className="p-5 sm:p-6 rounded-2xl bg-zinc-900/70 border border-zinc-800 space-y-4 text-xs shadow-xl">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-400">
+                    ID: {selectedFarm.id.slice(0, 8)}...
+                  </span>
+                  <h3 className="text-lg font-bold text-zinc-100 mt-1">{selectedFarm.farm_name}</h3>
+                  <p className="text-zinc-400 text-xs flex items-center gap-1 mt-0.5">
+                    <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>{selectedFarm.location_name}</span>
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs font-bold text-emerald-400">{selectedFarm.total_area_hectares} ha</div>
+                  <div className="text-[11px] text-zinc-400">{selectedFarm.total_area_acres} acres</div>
+                </div>
               </div>
 
-              <div className="space-y-2 border-t border-zinc-800 pt-3">
-                <div className="flex justify-between py-1 border-b border-zinc-800/50">
-                  <span className="text-zinc-400">Total Hectares:</span>
-                  <span className="font-bold text-emerald-400">{selectedFarm.total_area_hectares} ha</span>
+              <div className="grid grid-cols-2 gap-2 text-xs border-t border-zinc-800 pt-3">
+                <div className="p-2.5 rounded-xl bg-zinc-950 border border-zinc-850">
+                  <div className="text-[10px] text-zinc-500">Current Crop</div>
+                  <div className="font-semibold text-zinc-100 mt-0.5 truncate">
+                    {selectedFarm.current_crop || "Unspecified"}
+                  </div>
                 </div>
-                <div className="flex justify-between py-1 border-b border-zinc-800/50">
-                  <span className="text-zinc-400">Total Acres:</span>
-                  <span className="font-bold text-zinc-200">{selectedFarm.total_area_acres} acres</span>
+                <div className="p-2.5 rounded-xl bg-zinc-950 border border-zinc-850">
+                  <div className="text-[10px] text-zinc-500">Irrigation Setup</div>
+                  <div className="font-semibold text-emerald-400 mt-0.5 truncate">
+                    {selectedFarm.irrigation_available ? "Drip / Functional" : "Rainfed Only"}
+                  </div>
                 </div>
-                <div className="flex justify-between py-1 border-b border-zinc-800/50">
-                  <span className="text-zinc-400">Current Crop:</span>
-                  <span className="font-semibold text-zinc-200">{selectedFarm.current_crop || "Unspecified"}</span>
+                <div className="p-2.5 rounded-xl bg-zinc-950 border border-zinc-850">
+                  <div className="text-[10px] text-zinc-500">Planting Window</div>
+                  <div className="font-medium text-zinc-300 mt-0.5 truncate">
+                    {selectedFarm.planting_date || "Not recorded"}
+                  </div>
                 </div>
-                <div className="flex justify-between py-1 border-b border-zinc-800/50">
-                  <span className="text-zinc-400">Planting Window:</span>
-                  <span className="text-zinc-300">{selectedFarm.planting_date || "Not set"}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-zinc-800/50">
-                  <span className="text-zinc-400">Irrigation:</span>
-                  <span className="text-emerald-400 font-medium">
-                    {selectedFarm.irrigation_available ? "Installed & Functional" : "Rainfed Only"}
-                  </span>
-                </div>
-                <div className="flex justify-between py-1">
-                  <span className="text-zinc-400">Priority:</span>
-                  <span className="text-zinc-200">{selectedFarm.farming_priorities}</span>
+                <div className="p-2.5 rounded-xl bg-zinc-950 border border-zinc-850">
+                  <div className="text-[10px] text-zinc-500">Priority Goal</div>
+                  <div className="font-medium text-zinc-300 mt-0.5 truncate">
+                    {selectedFarm.farming_priorities || "Soil Health"}
+                  </div>
                 </div>
               </div>
 
               {selectedFarm.fields && selectedFarm.fields.length > 0 && (
                 <div className="border-t border-zinc-800 pt-3 space-y-2">
-                  <div className="font-semibold text-zinc-300">Field Blocks ({selectedFarm.fields.length}):</div>
-                  {selectedFarm.fields.map((f) => (
-                    <div key={f.id} className="p-2.5 rounded-xl bg-zinc-950 border border-zinc-800 space-y-1">
-                      <div className="flex justify-between font-medium text-zinc-200">
-                        <span>{f.field_name}</span>
-                        <span className="text-emerald-400">{f.area_hectares} ha</span>
+                  <div className="font-semibold text-zinc-300 flex items-center justify-between">
+                    <span>Field Blocks ({selectedFarm.fields.length})</span>
+                    <span className="text-[10px] text-zinc-500 font-mono">Delineated Zones</span>
+                  </div>
+                  <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                    {selectedFarm.fields.map((f) => (
+                      <div key={f.id} className="p-2.5 rounded-xl bg-zinc-950 border border-zinc-850 flex items-center justify-between">
+                        <div>
+                          <div className="font-medium text-zinc-200">{f.field_name}</div>
+                          <div className="text-[10px] text-zinc-500">{f.current_crop || "Fallow"}</div>
+                        </div>
+                        <span className="font-mono text-emerald-400 font-semibold">{f.area_hectares} ha</span>
                       </div>
-                      <div className="text-[11px] text-zinc-400">{f.current_crop} • {f.notes}</div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
+
+              {/* Quick Jump Links into Farm Intelligence */}
+              <div className="pt-3 border-t border-zinc-800/80 space-y-2">
+                <div className="text-[10px] font-mono uppercase tracking-wider text-zinc-500">
+                  Actionable Modules for this Farm
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                  <Link
+                    href="/earth-intelligence"
+                    className="p-2 rounded-xl bg-zinc-950 hover:bg-zinc-850 border border-zinc-850 text-zinc-300 hover:text-white flex items-center justify-between transition"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Satellite className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>NASA Data</span>
+                    </span>
+                    <ArrowRight className="w-3 h-3 text-zinc-500" />
+                  </Link>
+
+                  <Link
+                    href="/rotation"
+                    className="p-2 rounded-xl bg-zinc-950 hover:bg-zinc-850 border border-zinc-850 text-zinc-300 hover:text-white flex items-center justify-between transition"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Rotation</span>
+                    </span>
+                    <ArrowRight className="w-3 h-3 text-zinc-500" />
+                  </Link>
+
+                  <Link
+                    href="/digital-twin"
+                    className="p-2 rounded-xl bg-zinc-950 hover:bg-zinc-850 border border-zinc-850 text-zinc-300 hover:text-white flex items-center justify-between transition"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                      <span>What-If Sim</span>
+                    </span>
+                    <ArrowRight className="w-3 h-3 text-zinc-500" />
+                  </Link>
+
+                  <Link
+                    href="/reports"
+                    className="p-2 rounded-xl bg-zinc-950 hover:bg-zinc-850 border border-zinc-850 text-zinc-300 hover:text-white flex items-center justify-between transition"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <FileText className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Full Dossier</span>
+                    </span>
+                    <ArrowRight className="w-3 h-3 text-zinc-500" />
+                  </Link>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="p-8 text-center rounded-2xl bg-zinc-900/40 border border-zinc-800 text-zinc-500 text-xs">
-              Select a farm from the list or map to view its boundary details.
+              Select a farm from the map or list below to view its live field dossier.
             </div>
           )}
         </div>
+      </div>
+
+      {/* Registered Farms List & Management */}
+      <div className="space-y-4 pt-6 border-t border-zinc-800/80">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-bold text-white flex items-center gap-2">
+            <span>Registered Farms for {currentUser?.name}</span>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 font-mono">
+              {farms.length}
+            </span>
+          </h2>
+          <div className="text-xs text-zinc-500">Click any farm card to center map and load dossier</div>
+        </div>
+
+        {loading ? (
+          <div className="p-8 text-center text-zinc-500 text-sm">Loading registered farms...</div>
+        ) : farms.length === 0 ? (
+          <div className="p-8 text-center rounded-2xl bg-zinc-900/40 border border-zinc-800 text-zinc-400 text-sm">
+            No farms registered for this farmer yet. Click <strong>Register Farm</strong> or <strong>Draw Boundary</strong> to add one.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {farms.map((farm) => {
+              const isSelected = selectedFarm?.id === farm.id;
+              return (
+                <div
+                  key={farm.id}
+                  onClick={() => setSelectedFarm(farm)}
+                  className={`p-5 rounded-2xl border transition-all cursor-pointer space-y-3 ${
+                    isSelected
+                      ? "bg-zinc-900/90 border-emerald-500/60 shadow-lg shadow-emerald-950/30"
+                      : "bg-zinc-900/40 border-zinc-800 hover:border-zinc-700"
+                  }`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="font-bold text-sm text-zinc-100">{farm.farm_name}</h3>
+                      <p className="text-xs text-zinc-400 flex items-center gap-1 mt-1">
+                        <MapPin className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="truncate max-w-[200px]">{farm.location_name}</span>
+                      </p>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteFarm(farm.id);
+                      }}
+                      className="p-1 text-zinc-500 hover:text-rose-400 rounded transition"
+                      title="Delete farm"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+                    <div className="p-2.5 rounded-xl bg-zinc-950 border border-zinc-800">
+                      <div className="text-[10px] text-zinc-500">Geodesic Area</div>
+                      <div className="font-bold text-emerald-400 mt-0.5">
+                        {farm.total_area_hectares} ha
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-zinc-950 border border-zinc-800">
+                      <div className="text-[10px] text-zinc-500">Current Crop</div>
+                      <div className="font-semibold text-zinc-200 mt-0.5 truncate">
+                        {farm.current_crop || "None"}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[11px] text-zinc-400 pt-2 border-t border-zinc-800/80">
+                    <span>Coordinates: {farm.latitude.toFixed(3)}°N, {farm.longitude.toFixed(3)}°E</span>
+                    <span className="text-emerald-400 font-medium font-mono text-[10px]">WGS84 Polygon</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Modal: Farm Registration */}

@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     PORT: int = 8000
     HOST: str = "0.0.0.0"
-    VERSION: str = "3.2.0"
+    VERSION: str = "4.0.0"
     DEFAULT_REGION: str = "Global (NASA Earth Observations)"
 
     # Optional AI LLM API Keys (zero-paid fallback works locally if unset)

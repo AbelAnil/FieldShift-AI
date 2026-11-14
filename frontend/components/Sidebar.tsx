@@ -17,52 +17,92 @@ import {
   Coins,
   Sprout,
   Recycle,
+  Scale,
   X,
 } from "lucide-react";
 
-const navigationItems = [
-  { name: "Overview", href: "/", icon: LayoutDashboard },
-  { name: "My Farms", href: "/farms", icon: MapPin },
-  { name: "Earth Intelligence", href: "/earth-intelligence", icon: Satellite },
-  { name: "Soil Intelligence", href: "/soil", icon: FlaskConical },
-  { name: "Terrain & Drainage", href: "/terrain", icon: Mountain },
-  { name: "Digital Twin", href: "/digital-twin", icon: Binary },
-  { name: "Crop Rotation Planner", href: "/rotation", icon: RotateCcw },
-  { name: "AI Farm Assistant", href: "/assistant", icon: Bot },
-  { name: "Tasks & Reminders", href: "/tasks", icon: CalendarCheck },
-  { name: "Carbon Credits", href: "/carbon", icon: Coins },
-  { name: "Integrated Farming", href: "/integrated-farming", icon: Recycle },
-  { name: "Reports", href: "/reports", icon: FileText },
+interface NavItem {
+  labelKey: string;
+  defaultLabel: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
+
+const navSections: NavSection[] = [
+  {
+    title: "Farm Management",
+    items: [
+      { labelKey: "nav.overview", defaultLabel: "Overview", href: "/", icon: LayoutDashboard },
+      { labelKey: "nav.my_farms", defaultLabel: "My Farms", href: "/farms", icon: MapPin },
+    ],
+  },
+  {
+    title: "Earth & Soil Data",
+    items: [
+      { labelKey: "nav.earth_intel", defaultLabel: "Earth Intelligence", href: "/earth-intelligence", icon: Satellite },
+      { labelKey: "nav.soil_intel", defaultLabel: "Soil Intelligence", href: "/soil", icon: FlaskConical },
+      { labelKey: "nav.terrain", defaultLabel: "Terrain & Drainage", href: "/terrain", icon: Mountain },
+    ],
+  },
+  {
+    title: "Planning & Advisory",
+    items: [
+      { labelKey: "nav.digital_twin", defaultLabel: "Digital Twin", href: "/digital-twin", icon: Binary },
+      { labelKey: "nav.rotation", defaultLabel: "Crop Rotation Planner", href: "/rotation", icon: RotateCcw },
+      { labelKey: "nav.assistant", defaultLabel: "AI Farm Assistant", href: "/assistant", icon: Bot },
+      { labelKey: "nav.tasks", defaultLabel: "Tasks & Reminders", href: "/tasks", icon: CalendarCheck },
+    ],
+  },
+  {
+    title: "Ecosystem & Tools",
+    items: [
+      { labelKey: "nav.carbon", defaultLabel: "Carbon Credits", href: "/carbon", icon: Coins },
+      { labelKey: "nav.integrated_farming", defaultLabel: "Integrated Farming", href: "/integrated-farming", icon: Recycle },
+      { labelKey: "nav.reports", defaultLabel: "Reports", href: "/reports", icon: FileText },
+      { labelKey: "nav.attribution", defaultLabel: "Scientific Attribution", href: "/attribution", icon: Scale },
+    ],
+  },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { isMobileSidebarOpen, closeMobileSidebar } = useUI();
+  const { isMobileSidebarOpen, closeMobileSidebar, t } = useUI();
 
   const renderNavLinks = () => (
-    <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-      <div className="px-3 py-2 text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">
-        Platform Navigation
-      </div>
-      {navigationItems.map((item) => {
-        const isActive = pathname === item.href;
-        const Icon = item.icon;
-        return (
-          <Link
-            key={item.name}
-            href={item.href}
-            onClick={closeMobileSidebar}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-              isActive
-                ? "bg-emerald-600/15 text-emerald-400 border border-emerald-500/20 shadow-sm"
-                : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60"
-            }`}
-          >
-            <Icon className={`w-4 h-4 ${isActive ? "text-emerald-400" : "text-zinc-400"}`} />
-            <span>{item.name}</span>
-          </Link>
-        );
-      })}
+    <nav className="flex-1 p-3 space-y-3 overflow-y-auto">
+      {navSections.map((section) => (
+        <div key={section.title}>
+          <div className="px-3 py-1.5 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+            {section.title}
+          </div>
+          <div className="space-y-0.5">
+            {section.items.map((item) => {
+              const isActive = pathname === item.href;
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={closeMobileSidebar}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                    isActive
+                      ? "bg-emerald-600/15 text-emerald-400 border border-emerald-500/20 shadow-sm"
+                      : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60"
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 ${isActive ? "text-emerald-400" : "text-zinc-400"}`} />
+                  <span>{t(item.labelKey, item.defaultLabel)}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </nav>
   );
 
@@ -75,6 +115,12 @@ export default function Sidebar() {
         </div>
         <div className="font-semibold text-zinc-200">Kerala, India</div>
         <div className="text-[11px] text-zinc-400 mt-1">Tropical Monsoon / Agro-ecological zones</div>
+      </div>
+      {/* Version badge */}
+      <div className="mt-2 flex justify-center">
+        <span className="text-[10px] font-medium text-zinc-500 bg-zinc-900/60 border border-zinc-800/60 px-2 py-0.5 rounded-full">
+          v4.0
+        </span>
       </div>
     </div>
   );
@@ -149,5 +195,3 @@ export default function Sidebar() {
     </>
   );
 }
-
-

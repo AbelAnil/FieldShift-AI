@@ -363,33 +363,12 @@ export default function AssistantPage() {
 
     setError(null);
 
-    // Request microphone permission explicitly first to ensure browser prompt appears
-    if (navigator.mediaDevices?.getUserMedia) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        // Stop audio tracks immediately once permission is verified so speech engine can access mic
-        stream.getTracks().forEach((track) => track.stop());
-      } catch (permErr: any) {
-        if (permErr.name === "NotAllowedError" || permErr.name === "PermissionDeniedError") {
-          setError(
-            "Microphone permission denied. Please click the lock/settings icon in your browser address bar and allow microphone access."
-          );
-        } else if (permErr.name === "NotFoundError" || permErr.name === "DevicesNotFoundError") {
-          setError("No microphone found. Please connect a microphone to your device.");
-        } else {
-          setError(`Microphone error: ${permErr.message || "Unable to access microphone"}`);
-        }
-        setIsRecording(false);
-        return;
-      }
-    }
-
     try {
       const recognition = new SpeechRecognition();
       const currentLangConfig = LANGUAGES.find((l) => l.code === language);
       recognition.lang = currentLangConfig?.sttTag || "en-IN";
       recognition.interimResults = true;
-      recognition.continuous = true;
+      recognition.continuous = false; // Auto-finishes when user stops speaking
       recognition.maxAlternatives = 1;
 
       // Keep base text if already present in input
@@ -419,16 +398,16 @@ export default function AssistantPage() {
           );
         } else if (event.error === "network") {
           setError(
-            "Speech recognition network error: The browser's speech service requires an active internet connection."
+            "Speech recognition network error: Browser speech service requires internet connection. You can also use the preset voice chips below."
           );
         } else if (event.error === "audio-capture") {
-          setError("No microphone was detected. Please check your audio input device.");
+          setError("No microphone was detected. Please plug in or select a microphone in your OS settings.");
         } else if (event.error === "language-not-supported") {
           setError(
-            `Voice recognition for '${currentLangConfig?.label || language}' is not installed in this browser. Try English.`
+            `Voice recognition for '${currentLangConfig?.label || language}' is not supported by your browser engine. Try switching to English.`
           );
         } else if (event.error !== "no-speech") {
-          setError(`Voice input error (${event.error}). Please try again.`);
+          setError(`Voice input notice (${event.error}). Click again or type your question.`);
         }
         setIsRecording(false);
       };
@@ -441,7 +420,7 @@ export default function AssistantPage() {
       recognition.start();
     } catch (startErr: any) {
       console.error("Failed to start speech recognition:", startErr);
-      setError("Failed to start voice recognition. Please try clicking the microphone again.");
+      setError("Unable to initialize microphone. Please check browser permissions or use the quick query chips.");
       setIsRecording(false);
     }
   }, [isRecording, language, inputText]);
@@ -936,6 +915,41 @@ export default function AssistantPage() {
                 </button>
               </div>
             )}
+
+            {/* Quick Multi-lingual Voice Query Chips */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-2 text-[11px] no-scrollbar">
+              <span className="text-zinc-500 text-[10px] uppercase font-mono shrink-0">Try Voice:</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setLanguage("ml");
+                  setInputText("വാഴയ്ക്ക് പകരം പയർ കൃഷി ചെയ്യാമോ?");
+                }}
+                className="px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-emerald-400 shrink-0 transition"
+              >
+                🎙️ മലയാളം: വാഴയ്ക്ക് പകരം പയർ കൃഷി ചെയ്യാമോ?
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLanguage("hi");
+                  setInputText("मेरी मिट्टी में कौन सी फसल सबसे अच्छी रहेगी?");
+                }}
+                className="px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-cyan-400 shrink-0 transition"
+              >
+                🎙️ हिन्दी: दलहन फसलें कैसे लगाएं?
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLanguage("en");
+                  setInputText("How can I improve soil nitrogen with legumes?");
+                }}
+                className="px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-300 shrink-0 transition"
+              >
+                🎙️ English: How to boost nitrogen with legumes?
+              </button>
+            </div>
 
             <form
               onSubmit={(e) => {

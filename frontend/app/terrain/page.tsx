@@ -181,7 +181,7 @@ export default function TerrainPage() {
             <ul className="list-disc list-inside space-y-1 text-zinc-400 text-[11px] pl-1">
               <li>Maintain contour bunding or vegetative grass strips along slopes &gt;4° to mitigate topsoil erosion.</li>
               <li>Keep natural drainage swales unobstructed to prevent water stagnation in banana/pepper plots.</li>
-              <li>In highland Wayanad slopes, preserve deep-rooted trees to prevent localized slips during high-intensity cloudbursts.</li>
+              <li>On sloping lateritic valley terrains, preserve deep-rooted perimeter trees and terrace bunds to prevent localized topsoil washouts during high-intensity monsoon showers.</li>
             </ul>
           </div>
         </div>

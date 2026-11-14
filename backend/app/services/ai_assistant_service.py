@@ -465,17 +465,27 @@ class AIAssistantService:
         elif re.search(r"[\u0B80-\u0BFF]", user_message):
             language = "ta"
 
-        # 1. Resolve or create chat session
+        # 1. Resolve or create chat session (reuse existing session if active to avoid duplicates)
         if not session_id:
-            session = ChatSession(
-                farm_id=farm.id,
-                user_id=user_id,
-                title=user_message[:40] + ("..." if len(user_message) > 40 else ""),
+            recent_session = (
+                db.query(ChatSession)
+                .filter(ChatSession.farm_id == farm.id, ChatSession.user_id == user_id)
+                .order_by(ChatSession.updated_at.desc())
+                .first()
             )
-            db.add(session)
-            db.commit()
-            db.refresh(session)
-            session_id = session.id
+            if recent_session:
+                session = recent_session
+                session_id = session.id
+            else:
+                session = ChatSession(
+                    farm_id=farm.id,
+                    user_id=user_id,
+                    title=user_message[:40] + ("..." if len(user_message) > 40 else ""),
+                )
+                db.add(session)
+                db.commit()
+                db.refresh(session)
+                session_id = session.id
         else:
             session = db.query(ChatSession).filter(ChatSession.id == session_id).first()
             if not session:

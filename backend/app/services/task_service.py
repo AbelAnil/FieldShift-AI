@@ -47,7 +47,7 @@ class TaskService:
         # 2. Condition: Soil Acidity Liming
         if soil["effective_ph"] < 5.8:
             candidate_tasks.append({
-                "title": f"Apply Agricultural Lime / Dolomite ({soil['effective_ph']:.1f} pH)",
+                "title": "Apply Agricultural Lime / Dolomite for Soil Acidity",
                 "description": f"Soil pH of {soil['effective_ph']:.1f} indicates strong acidity common in Kerala laterite. Broadcast 350 kg/ha of agricultural lime or dolomite 2-3 weeks prior to basal fertilizer application.",
                 "category": "soil",
                 "priority": "medium",
@@ -87,17 +87,22 @@ class TaskService:
             "trigger_source": "Crop Rotation Optimizer",
         })
 
-        # Insert non-duplicate tasks
-        existing_pending = (
-            db.query(Task.title)
-            .filter(Task.farm_id == farm_id, Task.status == "pending")
+        # Insert non-duplicate tasks (check existing tasks for farm to prevent duplicates)
+        existing_tasks = (
+            db.query(Task.title, Task.status)
+            .filter(Task.farm_id == farm_id)
             .all()
         )
-        existing_titles = {t[0] for t in existing_pending}
+        existing_titles = {t[0] for t in existing_tasks if t[1] in ("pending", "completed")}
 
         created_tasks = []
         for cand in candidate_tasks:
-            if cand["title"] not in existing_titles:
+            # Match title exactly or prefix to prevent duplicates
+            already_exists = any(
+                cand["title"] == et or cand["title"].split("(")[0].strip() == et.split("(")[0].strip()
+                for et in existing_titles
+            )
+            if not already_exists:
                 t = Task(
                     farm_id=farm_id,
                     user_id=user_id,

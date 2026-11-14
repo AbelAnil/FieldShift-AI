@@ -51,3 +51,4 @@ def mark_observed_waterlogging(
 
     success = TerrainService.set_waterlogging_marker(db, farm.id, payload.marked)
     return {"success": success, "farmer_marked_waterlogging": payload.marked}
+

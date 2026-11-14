@@ -24,3 +24,4 @@ class TerrainAnalysis(Base):
     source_dataset = Column(String(100), default="NASADEM ~30m / Copernicus DEM", nullable=False)
 
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+

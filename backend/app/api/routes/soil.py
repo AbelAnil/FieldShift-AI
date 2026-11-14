@@ -87,3 +87,4 @@ def get_farm_soil_analysis(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access forbidden.")
 
     return SoilService.analyze_soil_profile(db, farm.id)
+

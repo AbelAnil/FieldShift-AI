@@ -30,3 +30,4 @@ class SoilProfile(Base):
     notes = Column(Text, nullable=True)
 
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+

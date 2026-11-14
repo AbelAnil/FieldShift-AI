@@ -445,3 +445,4 @@ class CropService:
             "planting_window": crop.planting_windows,
             "agronomic_source": crop.agronomic_source,
         }
+

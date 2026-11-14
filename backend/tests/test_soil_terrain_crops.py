@@ -15,6 +15,14 @@ def test_soil_terrain_crop_intelligence():
     farms = client.get("/api/farms", headers=headers).json()
     farm_id = farms[0]["id"]
 
+    # Clear any previous lab test to ensure clean baseline for testing
+    from app.database import SessionLocal
+    from app.models import SoilProfile
+    _db = SessionLocal()
+    _db.query(SoilProfile).filter(SoilProfile.farm_id == farm_id).delete()
+    _db.commit()
+    _db.close()
+
     # 3. Test Soil Analysis (Before lab test: Modelled SoilGrids + Missing NPK warning)
     soil_res = client.get(f"/api/farms/{farm_id}/soil-analysis", headers=headers)
     assert soil_res.status_code == 200
@@ -78,3 +86,4 @@ def test_soil_terrain_crop_intelligence():
 if __name__ == "__main__":
     test_soil_terrain_crop_intelligence()
     print("ALL SOIL, TERRAIN & CROP INTELLIGENCE TESTS PASSED SUCCESSFULLY!")
+

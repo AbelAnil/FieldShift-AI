@@ -36,3 +36,4 @@ class Crop(Base):
     agronomic_source = Column(String(255), default="Kerala Agricultural University (KAU) / ICAR", nullable=False)
 
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+

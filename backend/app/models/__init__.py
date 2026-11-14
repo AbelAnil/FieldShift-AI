@@ -7,6 +7,8 @@ from app.models.data_source import DataSource
 from app.models.soil_profile import SoilProfile
 from app.models.terrain_analysis import TerrainAnalysis
 from app.models.crop import Crop
+from app.models.rotation_plan import RotationPlan
+from app.models.digital_twin_snapshot import DigitalTwinSnapshot
 
 __all__ = [
     "User",
@@ -18,4 +20,6 @@ __all__ = [
     "SoilProfile",
     "TerrainAnalysis",
     "Crop",
+    "RotationPlan",
+    "DigitalTwinSnapshot",
 ]

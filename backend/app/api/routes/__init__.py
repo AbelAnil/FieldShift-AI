@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.routes import health, auth, farms, environment, soil, terrain, crops, rotation, digital_twin
+from app.api.routes import health, auth, farms, environment, soil, terrain, crops, rotation, digital_twin, assistant
 
 api_router = APIRouter(prefix="/api")
 api_router.include_router(health.router, tags=["Health"])
@@ -11,3 +11,4 @@ api_router.include_router(terrain.router)
 api_router.include_router(crops.router)
 api_router.include_router(rotation.router)
 api_router.include_router(digital_twin.router)
+api_router.include_router(assistant.router)

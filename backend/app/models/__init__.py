@@ -9,6 +9,8 @@ from app.models.terrain_analysis import TerrainAnalysis
 from app.models.crop import Crop
 from app.models.rotation_plan import RotationPlan
 from app.models.digital_twin_snapshot import DigitalTwinSnapshot
+from app.models.chat_session import ChatSession
+from app.models.chat_message import ChatMessage
 
 __all__ = [
     "User",
@@ -22,4 +24,6 @@ __all__ = [
     "Crop",
     "RotationPlan",
     "DigitalTwinSnapshot",
+    "ChatSession",
+    "ChatMessage",
 ]

@@ -203,15 +203,10 @@ export default function FarmsPage() {
 
         <div className="flex items-center gap-3">
           <button
-            onClick={() => {
-              setIsDrawingMode(!isDrawingMode);
-              if (!isDrawingMode) {
-                alert("Drawing mode activated: Click points on the map to trace your field boundary!");
-              }
-            }}
+            onClick={() => setIsDrawingMode(!isDrawingMode)}
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition ${
               isDrawingMode
-                ? "bg-amber-500 text-zinc-950"
+                ? "bg-amber-500 text-zinc-950 shadow-lg shadow-amber-950/40"
                 : "bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700"
             }`}
           >

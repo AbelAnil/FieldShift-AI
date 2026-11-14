@@ -176,14 +176,14 @@ class AIAssistantService:
             })
             citations.append("KAU Principles of Agronomy & Cropping Systems")
 
-            rotation_plans = RotationOptimizer.generate_rotation_strategies(db, farm.id)
+            rotation_plans = RotationOptimizer.generate_strategies_for_farm(db, farm)
             strat_summary = []
             for s in rotation_plans:
                 first_2_steps = " ➔ ".join([f"{step['crop_name']} ({step['season']})" for step in s['steps'][:2]])
                 strat_summary.append(
                     f"- **{s['strategy_name']}** (Score: **{s['overall_score']:.1f}**)\n"
                     f"  - Sequence: {first_2_steps} ➔ ...\n"
-                    f"  - Primary Objective: {s['description']}"
+                    f"  - Primary Objective: {s.get('soil_benefit_summary', s.get('strategy_name'))}"
                 )
 
             advice = (
@@ -410,14 +410,14 @@ class AIAssistantService:
             })
             citations.append("KAU Principles of Agronomy & Cropping Systems")
 
-            rotation_plans = RotationOptimizer.generate_rotation_strategies(db, farm.id)
+            rotation_plans = RotationOptimizer.generate_strategies_for_farm(db, farm)
             strat_summary = []
             for s in rotation_plans:
                 first_2_steps = " ➔ ".join([f"{step['crop_name']} ({step['season']})" for step in s['steps'][:2]])
                 strat_summary.append(
                     f"- **{s['strategy_name']}** (Score: **{s['overall_score']:.1f}**)\n"
                     f"  - Sequence: {first_2_steps} ➔ ...\n"
-                    f"  - Primary Objective: {s['description']}"
+                    f"  - Primary Objective: {s.get('soil_benefit_summary', s.get('strategy_name'))}"
                 )
 
             advice = (

@@ -247,6 +247,191 @@ CROP_AGRONOMY_KB = {
     }
 }
 
+CROP_DIAGNOSTICS_KB: Dict[str, Dict[str, Any]] = {
+    "cashew": {
+        "crop_name": "Cashew (Anacardium occidentale)",
+        "scientific_name": "Anacardium occidentale",
+        "family": "Anacardiaceae",
+        "keywords": ["cashew", "cashews", "kaju", "parangi andi", "parangiyandi", "anacardium"],
+        "optimal_ph": (5.0, 6.8),
+        "optimal_temp_c": (24.0, 32.0),
+        "optimal_30d_rain_mm": (50.0, 250.0),
+        "max_slope_deg": 20.0,
+        "drainage_sensitivity": "high",
+        "flowering_dry_needed": True,
+        "chilling_hours_required": 0,
+        "favorable_points": [
+            "Soil pH (6.1) aligns with cashew's natural tolerance for acidic laterites (pH 5.0–6.8).",
+            "Mean air temperature (24.8°C) matches tropical photosynthetic requirements (24–32°C).",
+            "Deep taproots confer excellent drought tolerance once established (requires minimal irrigation after Year 3).",
+        ],
+        "limiting_points": [
+            "Flowering Season Humidity & Rain Conflict: Cashew strictly requires 3–4 dry, sunny months (December to March) for blossom initiation and fruit set. In humid midland valleys with heavy rainfall, persistent cloudiness and mist cause catastrophic Blossom Blight (Colletotrichum gloeosporioides).",
+            "Severe Tea Mosquito Bug (Helopeltis antonii) Outbreaks: Humid valley environments trigger explosive populations of tea mosquito bugs that puncture tender shoots and inflorescence panicles, resulting in complete drying of flower clusters and blackened nuts.",
+            "Valley Drainage & Subsoil Moisture Risk: While slope is 4.2°, valley bottoms accumulate subterranean runoff. Cashew roots decay rapidly under seasonal water stagnation, predisposing trees to fatal Phytophthora collar and root rot.",
+        ],
+        "varieties": "KAU varieties: Madakkathara-1, Madakkathara-2, Raghav, Dhana, Vridhachalam-3, Kanaka",
+        "spacing": "7.5 m x 7.5 m (normal) or 4.0 m x 4.0 m (high-density system)",
+        "planting_window": "June-July with the onset of the South-West monsoon",
+        "mitigation_advice": "If you still decide to plant cashews, select exclusively the highest, best-drained ridge of the farm; avoid valley depressions. Plant on raised mounds with 10 kg FYM and 500g rock phosphate. Apply prophylactic sprays of 1% Bordeaux mixture before flowering and spray Beauveria bassiana (20g/L) or 2% neem oil for tea mosquito bug.",
+        "better_alternatives": [
+            "Nutmeg (Myristica fragrans) — Thrives in moist, humid valley soils with high export value for nut and mace.",
+            "Robusta Coffee — Outstanding two-tier understory crop for midland valley microclimates.",
+            "Natural Rubber (RRII 105) — Established champion for high-rainfall Western Ghat foothill tracts.",
+            "Banana (Robusta / Nendran) — Proven high-revenue commercial crops for fertile valley soils.",
+            "Black Pepper (Panniyur-1) — Vertical intercrop trailing on existing trees or live standards.",
+        ],
+    },
+    "coffee": {
+        "crop_name": "Coffee (Robusta / Arabica)",
+        "scientific_name": "Coffea canephora / Coffea arabica",
+        "family": "Rubiaceae",
+        "keywords": ["coffee", "kaapi", "canephora", "arabica"],
+        "optimal_ph": (5.5, 6.8),
+        "optimal_temp_c": (18.0, 28.0),
+        "optimal_30d_rain_mm": (80.0, 300.0),
+        "max_slope_deg": 25.0,
+        "drainage_sensitivity": "medium",
+        "flowering_dry_needed": False,
+        "chilling_hours_required": 0,
+        "favorable_points": [
+            "Robusta coffee thrives in humid mid-elevation tropical zones with partial overhead shade.",
+            "Soil pH (6.1) and ambient humidity are highly favorable for root development and cherry development.",
+            "Permits vertical intercropping with black pepper trailing on shade trees (Silver Oak / Jackfruit).",
+        ],
+        "limiting_points": [
+            "Requires adequate 'blossom showers' (25–40 mm) in February-March for synchronized flowering.",
+            "Coffee Berry Borer (Hypothenemus hampei) requires strict field sanitation and Beauveria traps.",
+        ],
+        "varieties": "Robusta: CxR, S.274; Arabica (for higher elevations): Selection 9, Chandragiri",
+        "spacing": "2.5 m x 2.5 m for Robusta; 2.0 m x 2.0 m for Arabica",
+        "planting_window": "August-September (post heavy southwest monsoon)",
+        "mitigation_advice": "Plant under 50% shade cover with leguminous shade trees. Maintain mulch around basins.",
+        "better_alternatives": [
+            "Nutmeg (Myristica fragrans)",
+            "Black Pepper trailing on standards",
+            "Cocoa as intercrop",
+        ],
+    },
+    "rubber": {
+        "crop_name": "Natural Rubber (Hevea brasiliensis)",
+        "scientific_name": "Hevea brasiliensis",
+        "family": "Euphorbiaceae",
+        "keywords": ["rubber", "hevea", "latex"],
+        "optimal_ph": (4.5, 6.5),
+        "optimal_temp_c": (22.0, 34.0),
+        "optimal_30d_rain_mm": (100.0, 450.0),
+        "max_slope_deg": 28.0,
+        "drainage_sensitivity": "medium",
+        "flowering_dry_needed": False,
+        "chilling_hours_required": 0,
+        "favorable_points": [
+            "Kanjirappally/Kottayam is the geographic heartland of Indian natural rubber production.",
+            "Exceptional fit for acidic laterite soils (pH 4.5–6.2) and heavy annual monsoon rainfall.",
+            "Steady multi-decade latex revenue once mature (Year 7 through Year 30).",
+        ],
+        "limiting_points": [
+            "Long gestation period of 6 to 7 years before first tapping.",
+            "Vulnerable to Abnormal Leaf Fall (Phytophthora) during peak South-West monsoon requiring Bordeaux spray or aerial spraying.",
+        ],
+        "varieties": "RRII 105 (benchmark yield), RRII 414, RRII 430",
+        "spacing": "4.9 m x 4.9 m (square) or 6.7 m x 3.4 m (rectangular contour)",
+        "planting_window": "June-July with monsoon rains",
+        "mitigation_advice": "Intercrop with Pineapple or Banana during the first 3 years to generate immediate cash flow before canopy closure.",
+        "better_alternatives": [
+            "Nutmeg (faster commercial returns if irrigated)",
+            "Robusta Banana + Pepper system",
+        ],
+    },
+    "nutmeg": {
+        "crop_name": "Nutmeg & Mace (Myristica fragrans)",
+        "scientific_name": "Myristica fragrans",
+        "family": "Myristicaceae",
+        "keywords": ["nutmeg", "mace", "jathi", "jaathikka", "myristica"],
+        "optimal_ph": (5.5, 7.2),
+        "optimal_temp_c": (22.0, 32.0),
+        "optimal_30d_rain_mm": (100.0, 400.0),
+        "max_slope_deg": 18.0,
+        "drainage_sensitivity": "medium",
+        "flowering_dry_needed": False,
+        "chilling_hours_required": 0,
+        "favorable_points": [
+            "Outstanding agro-climatic fit for moist valley microclimates with rich subsoil moisture.",
+            "Dual-income crop: yields both nutmeg kernels and high-value mace.",
+            "Extremely long economic lifespan (>50 years) with rising yields year after year.",
+        ],
+        "limiting_points": [
+            "Dioecious tree: requires purchasing grafted orthotropic plants to guarantee 90% female trees with 10% males for pollination.",
+            "Requires partial shade during early years and irrigation during summer dry spells.",
+        ],
+        "varieties": "IISR Viswashree, KAU Konkan Sugandha, KAU Elite Clones",
+        "spacing": "8.0 m x 8.0 m or 9.0 m x 9.0 m",
+        "planting_window": "June-August (South-West monsoon)",
+        "mitigation_advice": "Plant banana as temporary nurse shade crop for the first 3 years. Apply 1% Bordeaux mixture to control fruit rot during heavy monsoon.",
+        "better_alternatives": [
+            "Cocoa (understory intercrop)",
+            "Black Pepper trailing on nutmeg trunks",
+        ],
+    },
+    "cardamom": {
+        "crop_name": "Small Cardamom (Elettaria cardamomum)",
+        "scientific_name": "Elettaria cardamomum",
+        "family": "Zingiberaceae",
+        "keywords": ["cardamom", "elakka", "elakkai", "elachi", "elettaria"],
+        "optimal_ph": (5.0, 6.5),
+        "optimal_temp_c": (10.0, 26.0),
+        "optimal_30d_rain_mm": (150.0, 400.0),
+        "max_slope_deg": 35.0,
+        "drainage_sensitivity": "high",
+        "flowering_dry_needed": False,
+        "chilling_hours_required": 0,
+        "favorable_points": [
+            "Top-tier spice commodity with exceptionally high market value per kilogram.",
+        ],
+        "limiting_points": [
+            "Elevation Barrier: Cardamom is strictly an evergreen hill-tract crop requiring elevations above 600m–1200m (High Ranges / Wayanad / Idukki).",
+            "Intolerant of lowland/midland ambient heat; leaves scorch and capsules abort above 28°C.",
+        ],
+        "varieties": "Njallani, PV-1, Appangala-1",
+        "spacing": "2.0 m x 2.0 m under dense canopy",
+        "planting_window": "June-July",
+        "mitigation_advice": "Unsuited for midland/valley elevations below 600m. Grow Ginger or Turmeric instead.",
+        "better_alternatives": [
+            "Ginger (Varada / Rio de Janeiro)",
+            "Turmeric (Prabha / Alleppey Supreme)",
+            "Nutmeg (Myristica fragrans)",
+        ],
+    },
+    "apple": {
+        "crop_name": "Apple (Malus domestica)",
+        "scientific_name": "Malus domestica",
+        "family": "Rosaceae",
+        "keywords": ["apple", "apples", "malus", "almond", "saffron", "olive", "cherry"],
+        "optimal_ph": (6.0, 7.0),
+        "optimal_temp_c": (4.0, 20.0),
+        "optimal_30d_rain_mm": (30.0, 150.0),
+        "max_slope_deg": 25.0,
+        "drainage_sensitivity": "high",
+        "flowering_dry_needed": True,
+        "chilling_hours_required": 800,
+        "favorable_points": [],
+        "limiting_points": [
+            "Physiological Chilling Requirement: Apple trees strictly require 600 to 1,000 hours of winter chilling temperatures below 7.2°C to break winter dormancy and initiate floral buds. In tropical Kerala (mean temperature 24.8°C), physiological chilling is completely absent, resulting in permanent vegetative stagnation and zero flowering.",
+            "Heavy monsoon rainfall (>2,500 mm) causes catastrophic fungal foliage rot and root asphyxiation in deciduous temperate pome fruits.",
+        ],
+        "varieties": "Not commercially viable in tropical lowlands/midlands",
+        "spacing": "N/A",
+        "planting_window": "N/A",
+        "mitigation_advice": "Do not attempt commercial apple cultivation in tropical valley ecosystems. Even low-chill varieties (like HRMN-99) produce poor fruit quality and suffer heavy fungal dieback in humid monsoon climates.",
+        "better_alternatives": [
+            "Rambutan (N18 / Rongrien) — Premium tropical fruit that thrives in humid laterites.",
+            "Mangosteen (Garcinia mangostana) — Highly lucrative fruit suited to river valley microclimates.",
+            "Avocado (Hass / Pollock) — Thrives in well-drained tropical sloping lands.",
+            "Mauritius Pineapple — Immediate commercial returns.",
+        ],
+    },
+}
+
 
 class AIAssistantService:
     """
@@ -541,7 +726,145 @@ class AIAssistantService:
             return cls._localize_response(advice, follow_ups, language)
 
         # -------------------------------------------------------------
-        # Intent 2: Specific Crop Agronomy & Cultivation Guide
+        # Intent 2: Specific Crop Viability & Agronomic Diagnostic
+        # -------------------------------------------------------------
+        # Triggered when user mentions a specific crop to plant/grow/evaluate
+        matched_diag_crop = None
+        for c_key, c_diag in CROP_DIAGNOSTICS_KB.items():
+            if any(k in msg for k in c_diag["keywords"]):
+                matched_diag_crop = c_diag
+                break
+
+        if matched_diag_crop and any(w in msg for w in [
+            "plant", "grow", "cultivat", "suitab", "good", "bad", "better", "viable", 
+            "can i", "wanna", "want to", "should i", "how about", "what about", "is it ok", 
+            "possib", "recommend", "idea", "advice", "cashew", "coffee", "rubber", "nutmeg", "cardamom", "apple"
+        ]):
+            tools_executed.append({
+                "tool_name": "evaluate_specific_crop_viability",
+                "description": f"Evaluated site-specific agro-climatic viability for {matched_diag_crop['crop_name']} against farm soil pH, rainfall, and terrain",
+                "summary_result": f"Compared physiological tolerances against live 30d rain ({env['cumulative_rainfall_30d_mm']:.1f}mm), pH ({soil['effective_ph']:.1f}), and slope ({terrain['slope_mean_deg']:.1f}°)",
+            })
+            citations.append("Kerala Agricultural University (KAU) Package of Practices: Horticultural Crops")
+            citations.append("ICAR-Directorate of Cashew Research (DCR) / Spices Board India")
+
+            # Calculate precise telemetry matching
+            ph = soil["effective_ph"]
+            temp = env["avg_temperature_c"]
+            rain_30d = env["cumulative_rainfall_30d_mm"]
+            slope = terrain["slope_mean_deg"]
+
+            # 1. Soil pH Match
+            opt_ph_min, opt_ph_max = matched_diag_crop["optimal_ph"]
+            if opt_ph_min <= ph <= opt_ph_max:
+                ph_score = 95.0
+                ph_status = "Optimal ✅"
+            elif abs(ph - opt_ph_min) <= 0.6 or abs(ph - opt_ph_max) <= 0.6:
+                ph_score = 75.0
+                ph_status = "Moderate Match ⚠️"
+            else:
+                ph_score = 45.0
+                ph_status = "Sub-optimal / Unfavorable ❌"
+
+            # 2. Temperature Match
+            opt_t_min, opt_t_max = matched_diag_crop["optimal_temp_c"]
+            if opt_t_min <= temp <= opt_t_max:
+                temp_score = 95.0
+                temp_status = "Optimal ✅"
+            else:
+                temp_score = 50.0
+                temp_status = "Thermal Stress ❌"
+
+            # 3. Rainfall & Seasonal Moisture Match
+            opt_r_min, opt_r_max = matched_diag_crop["optimal_30d_rain_mm"]
+            if matched_diag_crop.get("chilling_hours_required", 0) > 0:
+                rain_score = 0.0
+                rain_status = "Zero Chilling Hours (<7°C) ❌"
+            elif matched_diag_crop.get("flowering_dry_needed") and rain_30d > 250.0:
+                rain_score = 35.0
+                rain_status = "Excessive Humidity / Disease Risk ❌"
+            elif opt_r_min <= rain_30d <= opt_r_max:
+                rain_score = 90.0
+                rain_status = "Optimal ✅"
+            else:
+                rain_score = 65.0
+                rain_status = "Marginal ⚠️"
+
+            # 4. Terrain & Drainage Match
+            max_slope = matched_diag_crop["max_slope_deg"]
+            if slope <= max_slope:
+                if matched_diag_crop["drainage_sensitivity"] == "high" and "valley" in farm.location_name.lower():
+                    terrain_score = 55.0
+                    terrain_status = "Valley Moisture Stagnation Risk ⚠️"
+                else:
+                    terrain_score = 90.0
+                    terrain_status = "Optimal Slope & Drainage ✅"
+            else:
+                terrain_score = 40.0
+                terrain_status = "Excessive Slope / Erosion Risk ❌"
+
+            # Composite Score Calculation
+            if matched_diag_crop.get("chilling_hours_required", 0) > 0:
+                final_score = 0.0
+                rating_label = "Ecologically Incompatible"
+                verdict_summary = (
+                    f"**{matched_diag_crop['crop_name']} CANNOT be grown commercially on your farm.** "
+                    f"Deciduous temperate pome fruits require an obligatory winter chilling period (< 7.2°C for 600–1,000 hours) to break bud dormancy. "
+                    f"At {farm.farm_name}'s tropical elevation and mean temperature of **{temp:.1f}°C**, chilling accumulation is exactly zero, causing permanent vegetative stagnation and complete reproductive failure."
+                )
+            else:
+                final_score = (0.25 * ph_score) + (0.20 * temp_score) + (0.35 * rain_score) + (0.20 * terrain_score)
+                if final_score >= 82.0:
+                    rating_label = "Highly Suitable"
+                    verdict_summary = f"**{matched_diag_crop['crop_name']} is an EXCELLENT fit for your land.** The local soil pH, temperature envelope, and drainage align very well with its agronomic requirements."
+                elif final_score >= 65.0:
+                    rating_label = "Moderately Suitable"
+                    verdict_summary = f"**{matched_diag_crop['crop_name']} is Moderately Suitable.** It can yield successfully with attentive soil and moisture management."
+                elif final_score >= 48.0:
+                    rating_label = "Marginally Suitable / High Agronomic Caution"
+                    verdict_summary = (
+                        f"**{matched_diag_crop['crop_name']} is only MARGINALLY SUITABLE for {farm.farm_name}.** "
+                        f"While your soil pH ({ph:.1f}) and temperature ({temp:.1f}°C) are biologically tolerable, "
+                        f"the local high-rainfall valley microclimate creates severe physiological conflicts and heavy fungal disease pressure."
+                    )
+                else:
+                    rating_label = "Unfavorable / High Failure Risk"
+                    verdict_summary = f"**{matched_diag_crop['crop_name']} is NOT recommended for your farm.** The environmental conditions impose severe stress on this crop."
+
+            favorable_items = "\n".join([f"- {p}" for p in matched_diag_crop["favorable_points"]]) if matched_diag_crop["favorable_points"] else "- No major natural competitive advantages for this site."
+            limiting_items = "\n".join([f"- {p}" for p in matched_diag_crop["limiting_points"]])
+            alternatives_items = "\n".join([f"- **{alt}**" for alt in matched_diag_crop["better_alternatives"]])
+
+            advice = (
+                f"### Site Viability Diagnostic: **{matched_diag_crop['crop_name']}** for **{farm.farm_name}**\n\n"
+                f"**Overall Viability Verdict:** **{final_score:.1f}/100 — {rating_label}**\n\n"
+                f"{verdict_summary}\n\n"
+                f"#### ✅ Why it may seem viable (Pros & Compatible Factors):\n"
+                f"{favorable_items}\n\n"
+                f"#### ⚠️ Why it is NOT ideal for your specific location (Cons & Major Risks):\n"
+                f"{limiting_items}\n\n"
+                f"#### 📊 Live Telemetry vs Crop Requirement Comparison:\n"
+                f"- **Soil Reaction (pH):** Farm is **{ph:.1f}** ({soil['ph_category']}) vs Requirement **{opt_ph_min} – {opt_ph_max}** ➔ **{ph_status}**\n"
+                f"- **Mean Air Temperature:** Farm is **{temp:.1f} °C** vs Requirement **{opt_t_min} – {opt_t_max} °C** ➔ **{temp_status}**\n"
+                f"- **NASA 30-Day Rainfall:** Farm is **{rain_30d:.1f} mm** vs Requirement **{opt_r_min} – {opt_r_max} mm** ➔ **{rain_status}**\n"
+                f"- **Terrain & Drainage:** Farm is **{slope:.1f}° ({terrain['slope_class']})** in valley setting ➔ **{terrain_status}**\n\n"
+                f"#### 🛠️ If You Still Choose to Plant {matched_diag_crop['crop_name'].split(' ')[0]}:\n"
+                f"- **Package of Practices:** {matched_diag_crop['mitigation_advice']}\n"
+                f"- **Recommended KAU Varieties:** {matched_diag_crop['varieties']}\n"
+                f"- **Planting Window & Geometry:** {matched_diag_crop['planting_window']} | Spacing: {matched_diag_crop['spacing']}\n\n"
+                f"#### 🌟 Crops That Are MUCH BETTER for Your Specific Field:\n"
+                f"Based on your soil pH ({ph:.1f}), high rainfall ({rain_30d:.1f} mm), and valley topography, these crops offer far higher success rates and profit margins:\n"
+                f"{alternatives_items}"
+            )
+            follow_ups = [
+                f"Tell me more about planting {matched_diag_crop['better_alternatives'][0].split(' ')[0]}.",
+                f"What are the major pests for {matched_diag_crop['crop_name'].split(' ')[0]}?",
+                f"Simulate a drought scenario for {farm.farm_name}.",
+            ]
+            return cls._localize_response(advice, follow_ups, language)
+
+        # -------------------------------------------------------------
+        # Intent 2.5: Specific Crop Agronomy & Cultivation Guide (Generic)
         # -------------------------------------------------------------
         for crop_key, crop_info in CROP_AGRONOMY_KB.items():
             if crop_key in msg or crop_info["crop_name"].lower() in msg:

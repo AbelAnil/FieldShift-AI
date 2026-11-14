@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field as PydanticField
+from pydantic import BaseModel, ConfigDict, Field as PydanticField
 from app.schemas.field import FieldOut
 
 
@@ -40,6 +40,5 @@ class FarmOut(FarmBase):
     created_at: datetime
     fields: Optional[List[FieldOut]] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 

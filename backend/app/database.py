@@ -1,11 +1,4 @@
 import os
-from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
-from app.config import get_settings
-
-settings = get_settings()
-
-import os
 from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
@@ -44,4 +37,5 @@ def get_db():
         yield db
     finally:
         db.close()
+
 

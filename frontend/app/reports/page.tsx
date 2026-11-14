@@ -17,44 +17,18 @@ import {
   Check,
 } from "lucide-react";
 import {
-  loginDemoUser,
-  fetchFarms,
   Farm,
   FarmReportResponse,
   fetchFarmReport,
 } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ReportsPage() {
-  const [farms, setFarms] = useState<Farm[]>([]);
-  const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null);
-  const [token, setToken] = useState<string>("");
+  const { farms, selectedFarm, selectFarm, token, isBackendOnline } = useAuth();
   const [report, setReport] = useState<FarmReportResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function init() {
-      try {
-        setIsLoading(true);
-        const auth = await loginDemoUser(1);
-        setToken(auth.access_token);
-        const farmsList = await fetchFarms(auth.access_token);
-        setFarms(farmsList);
-
-        if (farmsList.length > 0) {
-          const defaultFarm = farmsList[0];
-          setSelectedFarm(defaultFarm);
-          await loadReport(defaultFarm.id, auth.access_token);
-        }
-      } catch (err: any) {
-        setError(err.message || "Failed to initialize reports engine");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    init();
-  }, []);
 
   async function loadReport(farmId: string, userToken: string) {
     try {
@@ -69,11 +43,16 @@ export default function ReportsPage() {
     }
   }
 
-  const handleSelectFarm = async (farmId: string) => {
+  useEffect(() => {
+    if (selectedFarm && token) {
+      loadReport(selectedFarm.id, token);
+    }
+  }, [selectedFarm, token]);
+
+  const handleSelectFarm = (farmId: string) => {
     const found = farms.find((f) => f.id === farmId);
     if (!found) return;
-    setSelectedFarm(found);
-    await loadReport(found.id, token);
+    selectFarm(found);
   };
 
   const handleCopyMarkdown = () => {

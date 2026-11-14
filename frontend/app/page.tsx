@@ -25,48 +25,39 @@ import {
   RefreshCw,
 } from "lucide-react";
 import {
-  loginDemoUser,
-  fetchFarms,
   Farm,
   DigitalTwinResponse,
   fetchFarmDigitalTwin,
   fetchFarmTasks,
   TaskItem,
 } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Home() {
-  const [farms, setFarms] = useState<Farm[]>([]);
-  const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null);
+  const { farms, selectedFarm, token, isBackendOnline } = useAuth();
   const [twin, setTwin] = useState<DigitalTwinResponse | null>(null);
   const [tasks, setTasks] = useState<TaskItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    async function init() {
+    async function loadFarmData() {
+      if (!selectedFarm || !token) return;
       try {
         setIsLoading(true);
-        const auth = await loginDemoUser(1);
-        const farmsList = await fetchFarms(auth.access_token);
-        setFarms(farmsList);
-
-        if (farmsList.length > 0) {
-          const defaultFarm = farmsList[0];
-          setSelectedFarm(defaultFarm);
-          const [twinData, tasksData] = await Promise.all([
-            fetchFarmDigitalTwin(defaultFarm.id, auth.access_token),
-            fetchFarmTasks(defaultFarm.id, auth.access_token, false),
-          ]);
-          setTwin(twinData);
-          setTasks(tasksData);
-        }
+        const [twinData, tasksData] = await Promise.all([
+          fetchFarmDigitalTwin(selectedFarm.id, token),
+          fetchFarmTasks(selectedFarm.id, token, false),
+        ]);
+        setTwin(twinData);
+        setTasks(tasksData);
       } catch (err) {
         console.error("Failed to load dashboard overview:", err);
       } finally {
         setIsLoading(false);
       }
     }
-    init();
-  }, []);
+    loadFarmData();
+  }, [selectedFarm, token]);
 
   const pendingTasksCount = tasks.filter((t) => t.status === "pending").length;
 

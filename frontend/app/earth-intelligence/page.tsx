@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import {
-  fetchFarms,
-  loginDemoUser,
   fetchFarmEnvironment,
   fetchFarmRainfall,
   fetchFarmVegetation,
@@ -14,6 +12,7 @@ import {
   VegetationResponse,
   DataSourceItem,
 } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 import {
   Satellite,
   Droplets,
@@ -45,45 +44,28 @@ import {
 } from "recharts";
 
 export default function EarthIntelligencePage() {
-  const [token, setToken] = useState<string>("");
-  const [farms, setFarms] = useState<Farm[]>([]);
-  const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null);
+  const { farms, selectedFarm, selectFarm, token, isBackendOnline } = useAuth();
   const [dataSources, setDataSources] = useState<DataSourceItem[]>([]);
 
   const [envData, setEnvData] = useState<EnvironmentSummaryResponse | null>(null);
   const [rainfallData, setRainfallData] = useState<RainfallResponse | null>(null);
   const [vegData, setVegData] = useState<VegetationResponse | null>(null);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<"rainfall" | "climate" | "vegetation" | "provenance">("rainfall");
 
-  // Load farms & default environment data
+  // Load data sources registry
   useEffect(() => {
-    async function loadInitial() {
-      setLoading(true);
+    async function loadSources() {
       try {
-        const auth = await loginDemoUser(1);
-        setToken(auth.access_token);
-
-        const farmList = await fetchFarms(auth.access_token);
-        setFarms(farmList);
-
         const sources = await fetchDataSources();
         setDataSources(sources);
-
-        if (farmList.length > 0) {
-          const first = farmList[0];
-          setSelectedFarm(first);
-          await loadFarmData(first.id, auth.access_token);
-        }
       } catch (err) {
-        console.error("Initial load failed", err);
-      } finally {
-        setLoading(false);
+        console.error("Data sources fetch failed", err);
       }
     }
-    loadInitial();
+    loadSources();
   }, []);
 
   const loadFarmData = async (farmId: string, authToken: string) => {
@@ -98,17 +80,22 @@ export default function EarthIntelligencePage() {
       setRainfallData(rain);
       setVegData(veg);
     } catch (err) {
-      console.error("Failed to load telemetry", err);
+      console.error("Failed to load environment intelligence", err);
     } finally {
       setRefreshing(false);
     }
   };
 
+  useEffect(() => {
+    if (selectedFarm && token) {
+      loadFarmData(selectedFarm.id, token);
+    }
+  }, [selectedFarm, token]);
+
   const handleFarmChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const matched = farms.find((f) => f.id === e.target.value);
-    if (matched && token) {
-      setSelectedFarm(matched);
-      loadFarmData(matched.id, token);
+    if (matched) {
+      selectFarm(matched);
     }
   };
 

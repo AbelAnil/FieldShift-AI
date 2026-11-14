@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from "react";
 import {
-  fetchFarms,
-  loginDemoUser,
   fetchFarmDigitalTwin,
   simulateFarmScenario,
   Farm,
   DigitalTwinResponse,
   SimulationResponse,
 } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 import {
   Binary,
   Layers,
@@ -30,11 +29,9 @@ import {
 } from "lucide-react";
 
 export default function DigitalTwinPage() {
-  const [token, setToken] = useState("");
-  const [farms, setFarms] = useState<Farm[]>([]);
-  const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null);
+  const { farms, selectedFarm, selectFarm, token, isBackendOnline } = useAuth();
   const [twin, setTwin] = useState<DigitalTwinResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   // Simulation Controls
@@ -46,25 +43,10 @@ export default function DigitalTwinPage() {
   const [simulating, setSimulating] = useState(false);
 
   useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const auth = await loginDemoUser(1);
-        setToken(auth.access_token);
-        const farmList = await fetchFarms(auth.access_token);
-        setFarms(farmList);
-        if (farmList.length > 0) {
-          setSelectedFarm(farmList[0]);
-          await loadTwin(farmList[0].id, auth.access_token);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
+    if (selectedFarm && token) {
+      loadTwin(selectedFarm.id, token);
     }
-    load();
-  }, []);
+  }, [selectedFarm, token]);
 
   const loadTwin = async (farmId: string, authToken: string) => {
     setRefreshing(true);
@@ -110,9 +92,8 @@ export default function DigitalTwinPage() {
 
   const handleFarmChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const matched = farms.find((f) => f.id === e.target.value);
-    if (matched && token) {
-      setSelectedFarm(matched);
-      loadTwin(matched.id, token);
+    if (matched) {
+      selectFarm(matched);
     }
   };
 

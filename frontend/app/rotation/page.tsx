@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react";
 import {
-  fetchFarms,
-  loginDemoUser,
   evaluateCropSuitability,
   Farm,
   CropSuitabilityResponse,
   CropSuitabilityEvaluation,
 } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 import {
   RotateCcw,
   Leaf,
@@ -26,34 +25,11 @@ import {
 } from "lucide-react";
 
 export default function RotationPage() {
-  const [token, setToken] = useState("");
-  const [farms, setFarms] = useState<Farm[]>([]);
-  const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null);
+  const { farms, selectedFarm, selectFarm, token, isBackendOnline } = useAuth();
   const [suitabilityData, setSuitabilityData] = useState<CropSuitabilityResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [expandedCropId, setExpandedCropId] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const auth = await loginDemoUser(1);
-        setToken(auth.access_token);
-        const farmList = await fetchFarms(auth.access_token);
-        setFarms(farmList);
-        if (farmList.length > 0) {
-          setSelectedFarm(farmList[0]);
-          await loadSuitability(farmList[0].id, auth.access_token);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
 
   const loadSuitability = async (farmId: string, authToken: string) => {
     setRefreshing(true);
@@ -67,11 +43,16 @@ export default function RotationPage() {
     }
   };
 
+  useEffect(() => {
+    if (selectedFarm && token) {
+      loadSuitability(selectedFarm.id, token);
+    }
+  }, [selectedFarm, token]);
+
   const handleFarmChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const matched = farms.find((f) => f.id === e.target.value);
-    if (matched && token) {
-      setSelectedFarm(matched);
-      loadSuitability(matched.id, token);
+    if (matched) {
+      selectFarm(matched);
     }
   };
 

@@ -262,7 +262,7 @@ class CarbonService:
             elig.requirements_met = reqs_met
             elig.requirements_missing = reqs_missing
             elig.guidance = guidance
-            elig.screened_at = datetime.utcnow()
+            elig.screened_at = datetime.now(timezone.utc)
         db.commit()
 
         return {
@@ -360,7 +360,7 @@ class CarbonService:
             est.developer_commission_pct = developer_commission_pct
             est.net_revenue_usd_yr = net_usd_expected
             est.net_revenue_inr_yr = net_inr_expected
-            est.created_at = datetime.utcnow()
+            est.created_at = datetime.now(timezone.utc)
         db.commit()
 
         return {

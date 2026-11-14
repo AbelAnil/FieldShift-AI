@@ -24,8 +24,6 @@ import {
   X,
 } from "lucide-react";
 import {
-  loginDemoUser,
-  fetchFarms,
   Farm,
   CarbonPathway,
   CarbonPartner,
@@ -40,18 +38,17 @@ import {
   recordCarbonEvidence,
   fetchCarbonDossier,
 } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 export default function CarbonCreditsPage() {
-  const [farms, setFarms] = useState<Farm[]>([]);
-  const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null);
-  const [token, setToken] = useState<string>("");
+  const { farms, selectedFarm, selectFarm, token, isBackendOnline } = useAuth();
   const [pathways, setPathways] = useState<CarbonPathway[]>([]);
   const [selectedPathway, setSelectedPathway] = useState<string>("agroforestry");
   const [partners, setPartners] = useState<CarbonPartner[]>([]);
   const [eligibility, setEligibility] = useState<EligibilityResult | null>(null);
   const [estimate, setEstimate] = useState<CarbonEstimateData | null>(null);
   const [evidenceList, setEvidenceList] = useState<CarbonEvidenceItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isScreening, setIsScreening] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [isEvidenceModalOpen, setIsEvidenceModalOpen] = useState(false);
@@ -72,35 +69,26 @@ export default function CarbonCreditsPage() {
   const [evDesc, setEvDesc] = useState<string>("");
 
   useEffect(() => {
-    async function init() {
+    async function initMetadata() {
       try {
-        setIsLoading(true);
-        const auth = await loginDemoUser(1);
-        setToken(auth.access_token);
-
-        const [farmsList, pathwaysList, partnersList] = await Promise.all([
-          fetchFarms(auth.access_token),
+        const [pathwaysList, partnersList] = await Promise.all([
           fetchCarbonPathways(),
           fetchCarbonPartners(),
         ]);
-
-        setFarms(farmsList);
         setPathways(pathwaysList);
         setPartners(partnersList);
-
-        if (farmsList.length > 0) {
-          const defaultFarm = farmsList[0];
-          setSelectedFarm(defaultFarm);
-          await loadFarmCarbonContext(defaultFarm.id, "agroforestry", auth.access_token, 15.0, 30.0);
-        }
       } catch (err: any) {
-        setError(err.message || "Failed to initialize carbon module");
-      } finally {
-        setIsLoading(false);
+        console.error("Failed to load carbon metadata", err);
       }
     }
-    init();
+    initMetadata();
   }, []);
+
+  useEffect(() => {
+    if (selectedFarm && token) {
+      loadFarmCarbonContext(selectedFarm.id, selectedPathway, token, carbonPrice, commissionPct);
+    }
+  }, [selectedFarm, selectedPathway, token]);
 
   async function loadFarmCarbonContext(
     farmId: string,
@@ -135,11 +123,10 @@ export default function CarbonCreditsPage() {
     }
   }
 
-  const handleSelectFarm = async (farmId: string) => {
+  const handleSelectFarm = (farmId: string) => {
     const found = farms.find((f) => f.id === farmId);
     if (!found) return;
-    setSelectedFarm(found);
-    await loadFarmCarbonContext(found.id, selectedPathway, token, carbonPrice, commissionPct);
+    selectFarm(found);
   };
 
   const handleSelectPathway = async (pathwayId: string) => {

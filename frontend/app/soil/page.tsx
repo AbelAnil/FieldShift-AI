@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react";
 import {
-  fetchFarms,
-  loginDemoUser,
   fetchFarmSoilAnalysis,
   recordFarmerSoilTest,
   Farm,
   SoilAnalysisResponse,
 } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 import {
   FlaskConical,
   AlertTriangle,
@@ -23,11 +22,9 @@ import {
 } from "lucide-react";
 
 export default function SoilIntelligencePage() {
-  const [token, setToken] = useState("");
-  const [farms, setFarms] = useState<Farm[]>([]);
-  const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null);
+  const { farms, selectedFarm, selectFarm, token, isBackendOnline } = useAuth();
   const [soilData, setSoilData] = useState<SoilAnalysisResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   // Lab Test Modal state
@@ -41,27 +38,6 @@ export default function SoilIntelligencePage() {
   const [textureInput, setTextureInput] = useState("Clay Loam");
   const [labNameInput, setLabNameInput] = useState("Krishi Bhavan Soil Testing Lab, Kottayam");
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const auth = await loginDemoUser(1);
-        setToken(auth.access_token);
-        const farmList = await fetchFarms(auth.access_token);
-        setFarms(farmList);
-        if (farmList.length > 0) {
-          setSelectedFarm(farmList[0]);
-          await loadSoil(farmList[0].id, auth.access_token);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
-
   const loadSoil = async (farmId: string, authToken: string) => {
     setRefreshing(true);
     try {
@@ -74,11 +50,16 @@ export default function SoilIntelligencePage() {
     }
   };
 
+  useEffect(() => {
+    if (selectedFarm && token) {
+      loadSoil(selectedFarm.id, token);
+    }
+  }, [selectedFarm, token]);
+
   const handleFarmChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const matched = farms.find((f) => f.id === e.target.value);
-    if (matched && token) {
-      setSelectedFarm(matched);
-      loadSoil(matched.id, token);
+    if (matched) {
+      selectFarm(matched);
     }
   };
 

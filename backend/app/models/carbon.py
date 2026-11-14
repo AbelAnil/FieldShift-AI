@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Column, String, Text, Float, DateTime, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -31,7 +31,7 @@ class CarbonEligibility(Base):
     requirements_met = Column(JSON, default=list)
     requirements_missing = Column(JSON, default=list)
     guidance = Column(Text, nullable=True)
-    screened_at = Column(DateTime, default=datetime.utcnow)
+    screened_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
     farm = relationship("Farm", backref="carbon_eligibilities")
 
@@ -52,7 +52,7 @@ class CarbonEstimate(Base):
     net_revenue_usd_yr = Column(Float, nullable=False)
     net_revenue_inr_yr = Column(Float, nullable=False)
     disclaimer = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
     farm = relationship("Farm", backref="carbon_estimates")
 
@@ -68,9 +68,10 @@ class CarbonEvidence(Base):
     description = Column(Text, nullable=True)
     status = Column(String, default="pending")       # "verified", "submitted", "pending"
     metadata_json = Column(JSON, nullable=True)
-    recorded_at = Column(DateTime, default=datetime.utcnow)
+    recorded_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
     farm = relationship("Farm", backref="carbon_evidences")
+
 
 
 class CarbonPartner(Base):

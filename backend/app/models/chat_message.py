@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Column, String, Text, DateTime, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -14,6 +14,6 @@ class ChatMessage(Base):
     content = Column(Text, nullable=False)
     tools_called = Column(JSON, nullable=True)  # List of internal tools called with summaries
     citations = Column(JSON, nullable=True)     # List of agronomic/scientific citations
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
     session = relationship("ChatSession", back_populates="messages")

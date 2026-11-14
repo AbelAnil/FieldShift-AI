@@ -19,8 +19,6 @@ import {
   Calendar,
 } from "lucide-react";
 import {
-  loginDemoUser,
-  fetchFarms,
   Farm,
   TaskItem,
   fetchFarmTasks,
@@ -28,13 +26,12 @@ import {
   updateTaskStatus,
   deleteTask,
 } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 export default function TasksPage() {
-  const [farms, setFarms] = useState<Farm[]>([]);
-  const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null);
-  const [token, setToken] = useState<string>("");
+  const { farms, selectedFarm, selectFarm, token, isBackendOnline } = useAuth();
   const [tasks, setTasks] = useState<TaskItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
@@ -49,27 +46,10 @@ export default function TasksPage() {
   const [newDueDate, setNewDueDate] = useState("");
 
   useEffect(() => {
-    async function init() {
-      try {
-        setIsLoading(true);
-        const auth = await loginDemoUser(1);
-        setToken(auth.access_token);
-        const farmsList = await fetchFarms(auth.access_token);
-        setFarms(farmsList);
-
-        if (farmsList.length > 0) {
-          const defaultFarm = farmsList[0];
-          setSelectedFarm(defaultFarm);
-          await loadTasks(defaultFarm.id, auth.access_token, true);
-        }
-      } catch (err: any) {
-        setError(err.message || "Failed to initialize tasks dashboard");
-      } finally {
-        setIsLoading(false);
-      }
+    if (selectedFarm && token) {
+      loadTasks(selectedFarm.id, token, false);
     }
-    init();
-  }, []);
+  }, [selectedFarm, token]);
 
   async function loadTasks(farmId: string, userToken: string, syncTelemetry: boolean = false) {
     try {
@@ -83,11 +63,10 @@ export default function TasksPage() {
     }
   }
 
-  const handleSelectFarm = async (farmId: string) => {
+  const handleSelectFarm = (farmId: string) => {
     const found = farms.find((f) => f.id === farmId);
     if (!found) return;
-    setSelectedFarm(found);
-    await loadTasks(found.id, token, false);
+    selectFarm(found);
   };
 
   const handleStatusChange = async (taskId: string, newStatus: "pending" | "completed" | "dismissed" | "postponed") => {

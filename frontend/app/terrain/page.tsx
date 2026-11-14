@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react";
 import {
-  fetchFarms,
-  loginDemoUser,
   fetchFarmTerrain,
   toggleWaterlogging,
   Farm,
   TerrainResponse,
 } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 import {
   Mountain,
   Waves,
@@ -23,33 +22,10 @@ import {
 } from "lucide-react";
 
 export default function TerrainPage() {
-  const [token, setToken] = useState("");
-  const [farms, setFarms] = useState<Farm[]>([]);
-  const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null);
+  const { farms, selectedFarm, selectFarm, token, isBackendOnline } = useAuth();
   const [terrain, setTerrain] = useState<TerrainResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [toggling, setToggling] = useState(false);
-
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const auth = await loginDemoUser(1);
-        setToken(auth.access_token);
-        const farmList = await fetchFarms(auth.access_token);
-        setFarms(farmList);
-        if (farmList.length > 0) {
-          setSelectedFarm(farmList[0]);
-          await loadTerrain(farmList[0].id, auth.access_token);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
 
   const loadTerrain = async (farmId: string, authToken: string) => {
     try {
@@ -60,11 +36,16 @@ export default function TerrainPage() {
     }
   };
 
+  useEffect(() => {
+    if (selectedFarm && token) {
+      loadTerrain(selectedFarm.id, token);
+    }
+  }, [selectedFarm, token]);
+
   const handleFarmChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const matched = farms.find((f) => f.id === e.target.value);
-    if (matched && token) {
-      setSelectedFarm(matched);
-      loadTerrain(matched.id, token);
+    if (matched) {
+      selectFarm(matched);
     }
   };
 

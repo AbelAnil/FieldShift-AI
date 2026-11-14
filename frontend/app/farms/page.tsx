@@ -12,14 +12,13 @@ const FarmMap = dynamic(() => import("@/components/FarmMap"), {
   ),
 });
 import {
-  fetchFarms,
-  loginDemoUser,
   createFarm,
   deleteFarm,
   validateGeoJSON,
   Farm,
   User,
 } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 import {
   MapPin,
   Plus,
@@ -37,13 +36,18 @@ import {
 } from "lucide-react";
 
 export default function FarmsPage() {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string>("");
-  const [farmerId, setFarmerId] = useState<number>(1);
-  const [farms, setFarms] = useState<Farm[]>([]);
-  const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    farmerId,
+    user: currentUser,
+    token,
+    farms,
+    selectedFarm,
+    selectFarm,
+    switchFarmer,
+    refreshFarms,
+    isLoading: loading,
+    error,
+  } = useAuth();
 
   // Modal & Drawing States
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
@@ -62,28 +66,9 @@ export default function FarmsPage() {
   const [boundaryAreaHa, setBoundaryAreaHa] = useState<number>(0);
   const [boundaryAreaAc, setBoundaryAreaAc] = useState<number>(0);
 
-  // Switch demo farmer
-  const switchFarmer = async (id: number) => {
-    setLoading(true);
-    setError(null);
-    try {
-      setFarmerId(id);
-      const authData = await loginDemoUser(id);
-      setCurrentUser(authData.user);
-      setToken(authData.access_token);
-      const farmList = await fetchFarms(authData.access_token);
-      setFarms(farmList);
-      setSelectedFarm(farmList[0] || null);
-    } catch (err: any) {
-      setError(err.message || "Failed to load farmer account");
-    } finally {
-      setLoading(false);
-    }
+  const setSelectedFarm = (f: Farm | null) => {
+    if (f) selectFarm(f);
   };
-
-  useEffect(() => {
-    switchFarmer(1);
-  }, []);
 
   const handlePolygonDrawn = (geojson: any, ha: number, ac: number) => {
     setBoundaryGeoJSON(geojson);
@@ -137,7 +122,7 @@ export default function FarmsPage() {
         token
       );
 
-      setFarms([newFarm, ...farms]);
+      await refreshFarms();
       setSelectedFarm(newFarm);
       setIsRegisterModalOpen(false);
       resetForm();
@@ -152,11 +137,7 @@ export default function FarmsPage() {
     if (!confirm("Are you sure you want to delete this farm?")) return;
     try {
       await deleteFarm(farmId, token);
-      const remaining = farms.filter((f) => f.id !== farmId);
-      setFarms(remaining);
-      if (selectedFarm?.id === farmId) {
-        setSelectedFarm(remaining[0] || null);
-      }
+      await refreshFarms();
     } catch (err: any) {
       alert(`Delete failed: ${err.message}`);
     }

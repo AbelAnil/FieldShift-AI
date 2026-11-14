@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     PORT: int = 8000
     HOST: str = "0.0.0.0"
-    VERSION: str = "0.1.0"
+    VERSION: str = "3.2.0"
     DEFAULT_REGION: str = "Kerala, India"
 
     # Database
@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
 
     # CORS Settings (comma-separated origins)
-    CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
+    CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:8000"
 
     model_config = SettingsConfigDict(
         env_file=".env",

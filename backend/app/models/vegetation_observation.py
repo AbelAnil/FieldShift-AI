@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Float, DateTime, ForeignKey, Text
+from sqlalchemy import Column, String, Float, DateTime, ForeignKey, Text, Index, UniqueConstraint
 from app.database import Base
 
 
@@ -20,4 +20,10 @@ class VegetationObservation(Base):
     quality_metadata = Column(Text, nullable=True)
 
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("farm_id", "index_type", "observation_date", name="uq_veg_farm_type_date"),
+        Index("ix_veg_farm_type_date", "farm_id", "index_type", "observation_date"),
+    )
+
 

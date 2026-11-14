@@ -150,7 +150,7 @@ class TaskService:
             return None
         task.status = new_status
         if new_status == "completed":
-            task.completed_at = datetime.utcnow()
+            task.completed_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(task)
         return task

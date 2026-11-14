@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Float, DateTime, ForeignKey, Text
+from sqlalchemy import Column, String, Float, DateTime, ForeignKey, Text, Index, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -22,4 +22,10 @@ class EnvironmentalObservation(Base):
     data_class = Column(String(50), default="satellite", nullable=False)  # satellite, modelled, measured, forecast
 
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("farm_id", "parameter", "observation_date", name="uq_env_farm_param_date"),
+        Index("ix_env_farm_param_date", "farm_id", "parameter", "observation_date"),
+    )
+
 

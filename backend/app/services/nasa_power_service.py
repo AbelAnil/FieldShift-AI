@@ -71,11 +71,21 @@ class NASAPowerService:
 
         dates = sorted(precip_dict.keys())
         results = []
+        formatted_dates = [f"{d[:4]}-{d[4:6]}-{d[6:]}" for d in dates]
 
-        for d_str in dates:
-            # Convert YYYYMMDD to YYYY-MM-DD
-            formatted_date = f"{d_str[:4]}-{d_str[4:6]}-{d_str[6:]}"
+        # Single batch query to check existing observations
+        existing_rows = (
+            db.query(EnvironmentalObservation.parameter, EnvironmentalObservation.observation_date)
+            .filter(
+                EnvironmentalObservation.farm_id == farm_id,
+                EnvironmentalObservation.observation_date.in_(formatted_dates),
+            )
+            .all()
+        )
+        existing_set = set(existing_rows)
+        to_insert = []
 
+        for d_str, formatted_date in zip(dates, formatted_dates):
             raw_precip = precip_dict.get(d_str, 0.0)
             precip = max(raw_precip, 0.0) if raw_precip > -500 else 0.0
 
@@ -94,13 +104,31 @@ class NASAPowerService:
             raw_rh = rh_dict.get(d_str, 82.0)
             rh = raw_rh if raw_rh > 0 else 82.0
 
-            # Store in DB if not already present
-            cls._upsert_obs(db, farm_id, "GPM/NASA-POWER", "rainfall", precip, "mm/day", formatted_date, "0.5 deg (NASA POWER)")
-            cls._upsert_obs(db, farm_id, "NASA POWER", "temp_mean", t2m, "degC", formatted_date, "0.5 deg")
-            cls._upsert_obs(db, farm_id, "NASA POWER", "temp_max", t_max, "degC", formatted_date, "0.5 deg")
-            cls._upsert_obs(db, farm_id, "NASA POWER", "temp_min", t_min, "degC", formatted_date, "0.5 deg")
-            cls._upsert_obs(db, farm_id, "NASA POWER", "solar_radiation", solar, "MJ/m^2/day", formatted_date, "0.5 deg")
-            cls._upsert_obs(db, farm_id, "NASA POWER", "relative_humidity", rh, "%", formatted_date, "0.5 deg")
+            items = [
+                ("GPM/NASA-POWER", "rainfall", precip, "mm/day", "0.5 deg (NASA POWER)"),
+                ("NASA POWER", "temp_mean", t2m, "degC", "0.5 deg"),
+                ("NASA POWER", "temp_max", t_max, "degC", "0.5 deg"),
+                ("NASA POWER", "temp_min", t_min, "degC", "0.5 deg"),
+                ("NASA POWER", "solar_radiation", solar, "MJ/m^2/day", "0.5 deg"),
+                ("NASA POWER", "relative_humidity", rh, "%", "0.5 deg"),
+            ]
+
+            for dataset, param, val, unit, res in items:
+                if (param, formatted_date) not in existing_set:
+                    to_insert.append(
+                        EnvironmentalObservation(
+                            farm_id=farm_id,
+                            dataset=dataset,
+                            parameter=param,
+                            value=round(val, 3),
+                            unit=unit,
+                            observation_date=formatted_date,
+                            spatial_resolution=res,
+                            data_class="satellite",
+                            quality_metadata="NASA POWER Point Daily Meteorological Feed",
+                        )
+                    )
+                    existing_set.add((param, formatted_date))
 
             results.append({
                 "date": formatted_date,
@@ -112,7 +140,10 @@ class NASAPowerService:
                 "relative_humidity": round(rh, 1),
             })
 
-        db.commit()
+        if to_insert:
+            db.add_all(to_insert)
+            db.commit()
+
         return results
 
     @classmethod

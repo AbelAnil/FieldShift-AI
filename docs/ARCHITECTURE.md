@@ -1,107 +1,71 @@
-# FieldShift AI: Technical Architecture and Implementation Plan
+# FieldShift AI: Technical Architecture and Phased Implementation Plan
 
 **Project:** FieldShift AI  
-**Challenge:** Field Shift: Adapting Farms with NASA Data  
-**Competition:** NASA Space Apps Challenge 2026  
-**Team:** ChungusReloaded  
-**Development Approach:** Solo development  
-**Initial Deployment Region:** Kerala, India  
-**Initial Environment:** Local development on Windows (Lenovo LOQ)  
+**Challenge:** NASA Space Apps Challenge 2026, Field Shift: Adapting Farms with NASA Data  
+**Team:** ChungusReloaded (solo development)  
+**Initial Region:** Kerala, India  
+**Development Environment:** Windows laptop (local-first)  
+**Future Hosting:** Raspberry Pi, subject to hardware evaluation  
+**Document Version:** 3.0, consolidated final plan  
+**Date:** 14 November 2026  
 
 ---
 
-## 1. Project Overview
+## 1. Executive Summary
 
-FieldShift AI is a predictive agricultural decision-support platform that integrates NASA Earth observations, geospatial analysis, soil intelligence, terrain hydrology, crop rotation optimization, and artificial intelligence to assist farmers in adapting their agricultural practices to climate and environmental changes.
+FieldShift AI is an agricultural decision-support platform that turns NASA Earth observations into practical farm decisions. For each registered field it builds a digital twin combining satellite data, soil information, terrain, crop knowledge and farmer records. On top of that twin it provides crop suitability scoring, three alternative crop rotation strategies, what-if simulation, an AI farm assistant and farmer-approved reminders.
 
-The platform creates a farm-level digital twin synthesizing:
-- NASA Earth observations (GPM IMERG, SMAP, Landsat 8/9, MODIS, NASADEM, NASA POWER, GEDI)
-- Supplementary Earth observation datasets (Copernicus Sentinel-2, ISRIC SoilGrids, Copernicus DEM)
-- Soil properties (farmer lab test records + SoilGrids modelled profiles)
-- Terrain hydrology (DEM elevation, slope, flow direction/accumulation, potential water accumulation)
-- Crop knowledge base (Kerala-adapted crops with botanical, phenological, water, soil, and nutrient specs)
-- Multi-objective crop rotation optimization engine (Soil Health, Water Efficiency, Balanced)
-- Context-aware AI Farm Assistant with tool calling and deterministic safeguards
-- Farm task reminders and what-if simulation scenarios
-
----
-
-## 2. System Architecture
-
+### Core Workflow
 ```text
-                    FARMER
-                       │
-                       ▼
-              NEXT.JS WEB DASHBOARD (TypeScript, Tailwind, shadcn/ui, MapLibre GL)
-                       │
-                       ▼
-                  FASTAPI BACKEND
-                       │
-        ┌──────────────┼──────────────┐
-        ▼              ▼              ▼
-   FARM SERVICE   DATA SERVICE   USER SERVICE
-                       │
-             ┌─────────┴─────────┐
-             ▼         ▼         ▼
-           NASA     SATELLITE   SOIL DATA
-           DATA      IMAGERY    PROVIDERS
-             │         │         │
-             └─────────┬─────────┘
-                       │
-                       ▼
-              GEOSPATIAL ENGINE (GeoPandas, Rasterio, WhiteboxTools, PySheds)
-                       │
-        ┌──────────────┼──────────────┐
-        ▼              ▼              ▼
-   VEGETATION      TERRAIN         CLIMATE
-   ANALYSIS        ANALYSIS        ANALYSIS
-        │              │              │
-        └──────────────┬──────────────┘
-                       │
-                       ▼
-                DIGITAL TWIN (State Snapshots, What-if Simulations)
-                       │
-        ┌──────────────┼──────────────┐
-        ▼              ▼              ▼
-   CROP SUITABILITY  ROTATION     PREDICTION
-      ENGINE         ENGINE       ENGINE
-        │              │              │
-        └──────────────┬──────────────┘
-                       │
-                       ▼
-                AI FARM ASSISTANT (LLM Tool Calling + Guardrails)
-                       │
-              ┌────────┴────────┐
-              ▼                 ▼
-          FARM ADVICE       TASK MANAGER
-                                │
-                                ▼
-                         FARM REMINDERS
-                                │
-                                ▼
-                         WEB DASHBOARD
+NASA Earth Data → Environmental Analysis → Farm Digital Twin → Crop Suitability → Rotation Optimization → AI Guidance → Actionable Farm Tasks
 ```
 
+### Staged Build Sequence
+| Stage | Focus |
+|---|---|
+| **Now (Phase 0)** | Next.js, FastAPI, local development, basic working application |
+| **Next (Phase 1)** | PostgreSQL + PostGIS, farm registration, map boundaries |
+| **Then (Phases 2–5)** | NASA data, soil analysis, crop suitability, rotation (terrain follows) |
+| **Later (Phases 6–8)** | Digital twin predictions, AI assistant, reminders |
+| **Finally (Phase 9)** | Raspberry Pi deployment testing |
+
 ---
 
-## 3. Technology Stack
+## 2. System Architecture & Tech Stack
 
-- **Frontend:** Next.js (App Router), TypeScript, Tailwind CSS, shadcn/ui, MapLibre GL JS, Terra Draw, Recharts
-- **Backend:** Python 3.11, FastAPI, Pydantic v2, SQLAlchemy, GeoPandas, Rasterio, GDAL, WhiteboxTools, PySheds, NumPy, Pandas, SciPy, OR-Tools, APScheduler
-- **Database:** PostgreSQL + PostGIS (with SQLite / GeoJSON file-based fallback for initial rapid local boot)
-- **AI Assistant:** Provider-agnostic LLM interface with function/tool calling and rule-based fallback
-- **Data Integrations:** NASA POWER API, NASA Earthdata / GPM IMERG / SMAP, Google Earth Engine, ISRIC SoilGrids REST API
+- **Architecture:** Modular monolith (FastAPI backend + Next.js frontend + PostgreSQL/PostGIS)
+- **Frontend Framework:** Next.js (App Router), TypeScript, Tailwind CSS, shadcn/ui, MapLibre GL JS, Terra Draw, Recharts
+- **Backend Framework:** Python 3.11, FastAPI, Pydantic v2, Uvicorn
+- **Database:** PostgreSQL + PostGIS (SQLAlchemy ORM + Alembic)
+- **Geospatial & Analytics:** GeoPandas, Rasterio, GDAL, WhiteboxTools, PySheds, NumPy, Pandas, SciPy, OR-Tools
+- **AI Assistant:** Provider-independent LLM interface (hosted free tier / Ollama) with tool-calling and deterministic fallback
 
 ---
 
-## 4. Key Roadmap Phases
+## 3. Implementation Roadmap
 
-- **Phase 0: Environment & Core Setup** (FastAPI backend skeleton, Next.js app, virtual environment, git setup)
-- **Phase 1: Database & Farm Management** (Farm registration, boundary mapping, GeoJSON storage)
-- **Phase 2: NASA Data Integration** (NASA POWER API, GPM IMERG rainfall, SMAP regional moisture, Landsat/Sentinel vegetation indices)
-- **Phase 3: Soil & Terrain Intelligence** (SoilGrids REST API, farmer soil inputs, NASADEM elevation, slope, flow accumulation, drainage risks)
-- **Phase 4: Crop Knowledge Database & Suitability Engine** (Kerala crop profiles, multi-factor suitability scoring, missing-data transparency)
-- **Phase 5: Crop Rotation Optimization Engine** (OR-Tools / constraint optimizer for Soil Health, Water Efficiency, and Balanced strategies)
-- **Phase 6: Farm Digital Twin & What-If Simulation** (Aggregated farm state, historical snapshots, what-if parameter modification)
-- **Phase 7: AI Farm Assistant & Tasks** (Tool-augmented conversational agent, guardrails, reminder generator)
-- **Phase 8: Polish, Demonstration Farm & Presentation** (Demonstration scenario with sample Kerala farm in Kanjirappally/Wayanad/Palakkad)
+### Phase 0: Foundation Application (NOW)
+- FastAPI backend with CORS, environment configuration, `/api/health`.
+- Next.js 15 App Router frontend with responsive layout and navigation shell.
+- Verified frontend-to-backend communication.
+- Documented quickstart in README for reproducible setup.
+
+### Phase 1: Database, Farm Registration & Map Boundaries (NEXT)
+- PostgreSQL + PostGIS schema and migrations (Alembic).
+- Farm registration and field management.
+- MapLibre GL JS + Terra Draw interactive boundary editor.
+- GeoJSON upload validation & area computation.
+
+### Phases 2–5: Data and Decision Engines (THEN)
+- **Phase 2 (Earth Observation):** GPM IMERG rainfall, NASA POWER climate, Landsat/MODIS/Sentinel-2 vegetation indices, SMAP soil moisture context.
+- **Phase 3 (Soil & Terrain):** Farmer soil test records + SoilGrids modelled estimates; NASADEM elevation, slope, flow accumulation, water accumulation risk.
+- **Phase 4 (Crop Intelligence):** Kerala crop database (10–15 crops) with multi-factor suitability scoring and missing-data transparency.
+- **Phase 5 (Rotation Optimization):** Three constraint-driven rotation strategies: Soil Health Priority, Water Efficiency Priority, and Balanced Strategy.
+
+### Phases 6–8: Intelligence Layer (LATER)
+- **Phase 6 (Digital Twin):** Field state snapshots, environmental risk indicators, what-if simulator.
+- **Phase 7 (AI Farm Assistant):** Tool-connected conversational assistant with strict agricultural safeguards.
+- **Phase 8 (Tasks & Reports):** Condition-based reminder triggers, user approval workflow, downloadable reports.
+
+### Phase 9: Deployment & Portability (FINALLY)
+- Docker Compose configuration, backup/restore procedures, Raspberry Pi evaluation.

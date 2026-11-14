@@ -767,12 +767,41 @@ export async function fetchSuggestedPrompts(farmId: string, token: string): Prom
   return response.json();
 }
 
+export interface AssistantChatPayload {
+  message: string;
+  session_id?: string | number | null;
+  farm_id?: string | number | null;
+  field_id?: string | number | null;
+}
+
+export async function sendAssistantMessage(
+  payload: AssistantChatPayload,
+  token?: string
+) {
+  const res = await fetch(`${API_BASE_URL}/api/assistant/chat`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to get response from FieldShift AI");
+  }
+
+  return res.json();
+}
+
 export async function sendChatMessage(
   farmId: string,
   message: string,
   token: string,
   sessionId?: string,
   language: string = "en",
+  fieldId?: string | null,
 ): Promise<ChatApiResponse> {
   const response = await fetch(`${API_BASE_URL}/api/assistant/chat`, {
     method: "POST",
@@ -782,6 +811,7 @@ export async function sendChatMessage(
     },
     body: JSON.stringify({
       farm_id: farmId,
+      field_id: fieldId,
       message,
       session_id: sessionId,
       language,

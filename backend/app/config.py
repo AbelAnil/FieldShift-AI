@@ -12,7 +12,12 @@ class Settings(BaseSettings):
     VERSION: str = "4.0.0"
     DEFAULT_REGION: str = "Global (NASA Earth Observations)"
 
-    # Optional AI LLM API Keys (zero-paid fallback works locally if unset)
+    # LLM Assistant Configuration
+    LLM_API_KEY: str = ""
+    LLM_MODEL: str = "gemini-2.5-flash"
+    LLM_TIMEOUT_SECONDS: int = 25
+
+    # Optional AI LLM API Keys (legacy compatibility)
     GEMINI_API_KEY: Optional[str] = None
     OPENAI_API_KEY: Optional[str] = None
 
@@ -42,3 +47,6 @@ class Settings(BaseSettings):
 @lru_cache()
 def get_settings() -> Settings:
     return Settings()
+
+
+settings = get_settings()

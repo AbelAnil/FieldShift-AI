@@ -17,3 +17,11 @@ class ChatMessage(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
     session = relationship("ChatSession", back_populates="messages")
+
+    @property
+    def role(self) -> str:
+        return self.sender
+
+    @role.setter
+    def role(self, value: str):
+        self.sender = value

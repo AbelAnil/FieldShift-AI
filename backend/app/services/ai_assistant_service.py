@@ -1,13 +1,22 @@
 import re
 import os
 import json
+import logging
 from typing import Dict, Any, List, Tuple, Optional
 import httpx
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
+from app.models.user import User
 from app.models.farm import Farm
+from app.models.field import Field
+from app.models.soil_profile import SoilProfile
+from app.models.terrain_analysis import TerrainAnalysis
+from app.models.environmental_observation import EnvironmentalObservation
+from app.models.vegetation_observation import VegetationObservation
+from app.models.rotation_plan import RotationPlan
 from app.models.task import Task
+from app.models.carbon import CarbonEstimate
 from app.models.chat_session import ChatSession
 from app.models.chat_message import ChatMessage
 from app.services.digital_twin_service import DigitalTwinService
@@ -16,7 +25,334 @@ from app.services.crop_service import CropService
 from app.services.rotation_optimizer import RotationOptimizer
 from app.services.carbon_service import CarbonService
 
+logger = logging.getLogger(__name__)
 settings = get_settings()
+
+PLATFORM_OVERVIEW = """
+FieldShift AI Modules & Features:
+- Dashboard (/): Overview of active farms, field health alerts, pending tasks, and telemetry summaries.
+- Farms & Fields (/farms): Manage farm boundaries, acreage, crop assignments, and field metadata.
+- Earth Intelligence (/earth-intelligence): Satellite NDVI vegetation health, SMAP soil moisture, and NASA POWER weather analytics.
+- Soil & Terrain (/soil, /terrain): Soil pH, NPK, organic carbon, slope, elevation, and drainage analysis.
+- Crop Rotation Optimizer (/rotation): Multi-season crop sequence planning for soil fertility and yield optimization.
+- Digital Twin (/digital-twin): Simulated field states and what-if agronomic projections.
+- Integrated Farming (/integrated-farming): Multi-enterprise synergy (crops, livestock, aquaculture, agroforestry).
+- Carbon & Sustainability (/carbon): Carbon sequestration estimates, emissions tracking, and credit readiness.
+- Tasks & Reports (/tasks, /reports): Field operations scheduling and downloadable agronomic reports.
+"""
+
+
+def _safe_dict(obj: Any, exclude: Optional[set] = None) -> Dict[str, Any]:
+    """Serialize SQLAlchemy model attributes safely while stripping heavy GeoJSON geometry."""
+    if obj is None:
+        return {}
+    exclude = (exclude or set()) | {
+        "_sa_instance_state",
+        "hashed_password",
+        "password_hash",
+        "geometry",
+        "boundary",
+        "boundary_geojson_raw",
+        "geojson",
+        "polygon",
+    }
+    data: Dict[str, Any] = {}
+    for key, value in vars(obj).items():
+        if key in exclude or key.startswith("_"):
+            continue
+        if hasattr(value, "isoformat"):
+            data[key] = value.isoformat()
+        elif isinstance(value, (str, int, float, bool)) or value is None:
+            data[key] = value
+        elif isinstance(value, (list, dict)):
+            try:
+                json.dumps(value)
+                data[key] = value
+            except Exception:
+                pass
+    return data
+
+
+def build_user_and_site_context(
+    db: Session,
+    user: User,
+    farm_id: Optional[str] = None,
+    field_id: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Gather user-specific farms, fields, telemetry, tasks, and plans from the database."""
+    farms_query = db.query(Farm).filter(Farm.user_id == user.id)
+    if farm_id is not None:
+        farms_query = farms_query.filter(Farm.id == str(farm_id))
+    farms = farms_query.all()
+
+    farms_context: List[Dict[str, Any]] = []
+    for farm in farms:
+        fields_query = db.query(Field).filter(Field.farm_id == farm.id)
+        if field_id is not None:
+            fields_query = fields_query.filter(Field.id == str(field_id))
+        fields = fields_query.all()
+
+        fields_context: List[Dict[str, Any]] = []
+        for fld in fields:
+            soil = (
+                db.query(SoilProfile)
+                .filter(SoilProfile.farm_id == farm.id)
+                .order_by(SoilProfile.created_at.desc())
+                .first()
+            )
+            terrain = (
+                db.query(TerrainAnalysis)
+                .filter(TerrainAnalysis.farm_id == farm.id)
+                .order_by(TerrainAnalysis.created_at.desc())
+                .first()
+            )
+            env_obs = (
+                db.query(EnvironmentalObservation)
+                .filter(EnvironmentalObservation.farm_id == farm.id)
+                .order_by(EnvironmentalObservation.created_at.desc())
+                .first()
+            )
+            veg_obs = (
+                db.query(VegetationObservation)
+                .filter(VegetationObservation.farm_id == farm.id)
+                .order_by(VegetationObservation.created_at.desc())
+                .first()
+            )
+            rotations = (
+                db.query(RotationPlan)
+                .filter(RotationPlan.farm_id == farm.id)
+                .order_by(RotationPlan.created_at.desc())
+                .limit(3)
+                .all()
+            )
+
+            fields_context.append(
+                {
+                    "field": _safe_dict(fld),
+                    "latest_soil_profile": _safe_dict(soil),
+                    "terrain_analysis": _safe_dict(terrain),
+                    "latest_weather_environment": _safe_dict(env_obs),
+                    "latest_vegetation_ndvi": _safe_dict(veg_obs),
+                    "rotation_plans": [_safe_dict(r) for r in rotations],
+                }
+            )
+
+        soil = (
+            db.query(SoilProfile)
+            .filter(SoilProfile.farm_id == farm.id)
+            .order_by(SoilProfile.created_at.desc())
+            .first()
+        )
+        terrain = (
+            db.query(TerrainAnalysis)
+            .filter(TerrainAnalysis.farm_id == farm.id)
+            .order_by(TerrainAnalysis.created_at.desc())
+            .first()
+        )
+        env_obs_list = (
+            db.query(EnvironmentalObservation)
+            .filter(EnvironmentalObservation.farm_id == farm.id)
+            .order_by(EnvironmentalObservation.created_at.desc())
+            .limit(7)
+            .all()
+        )
+        veg_obs = (
+            db.query(VegetationObservation)
+            .filter(VegetationObservation.farm_id == farm.id)
+            .order_by(VegetationObservation.created_at.desc())
+            .first()
+        )
+        rotations = (
+            db.query(RotationPlan)
+            .filter(RotationPlan.farm_id == farm.id)
+            .order_by(RotationPlan.created_at.desc())
+            .limit(3)
+            .all()
+        )
+        tasks = (
+            db.query(Task)
+            .filter(Task.farm_id == farm.id)
+            .order_by(Task.created_at.desc())
+            .limit(10)
+            .all()
+        )
+        carbon_records = (
+            db.query(CarbonEstimate)
+            .filter(CarbonEstimate.farm_id == farm.id)
+            .order_by(CarbonEstimate.created_at.desc())
+            .limit(5)
+            .all()
+        )
+
+        farm_dict = _safe_dict(farm)
+        farm_dict["name"] = farm.farm_name
+
+        farms_context.append(
+            {
+                "farm": farm_dict,
+                "fields": fields_context,
+                "latest_soil_profile": _safe_dict(soil),
+                "terrain_analysis": _safe_dict(terrain),
+                "latest_weather_environment": [_safe_dict(e) for e in env_obs_list],
+                "latest_vegetation_ndvi": _safe_dict(veg_obs),
+                "rotation_plans": [_safe_dict(r) for r in rotations],
+                "recent_tasks": [_safe_dict(t) for t in tasks],
+                "carbon_records": [_safe_dict(c) for c in carbon_records],
+            }
+        )
+
+    return {
+        "user": _safe_dict(user),
+        "farms_data": farms_context,
+    }
+
+
+def _get_recent_history(
+    db: Session,
+    session_id: Optional[str],
+    limit: int = 12,
+) -> List[Dict[str, str]]:
+    """Fetch recent conversation turns for multi-turn memory."""
+    if not session_id:
+        return []
+    messages = (
+        db.query(ChatMessage)
+        .filter(ChatMessage.session_id == str(session_id))
+        .order_by(ChatMessage.created_at.desc())
+        .limit(limit)
+        .all()
+    )
+    messages.reverse()
+    return [
+        {
+            "role": "model" if getattr(msg, "role", getattr(msg, "sender", "user")) in ("assistant", "model") else "user",
+            "content": msg.content or "",
+        }
+        for msg in messages
+        if getattr(msg, "content", None)
+    ]
+
+
+def _deterministic_fallback(user_message: str, context: Dict[str, Any]) -> str:
+    """Fallback response if LLM_API_KEY is unset or the external API fails."""
+    farms = context.get("farms_data", [])
+    farm_names = [f["farm"].get("farm_name", f["farm"].get("name", "Unnamed Farm")) for f in farms]
+    msg_lower = user_message.lower()
+
+    if not farms:
+        return (
+            "You do not have any farms or fields logged in FieldShift AI yet. "
+            "Head over to the **Farms** page (`/farms`) to add your first farm boundary, "
+            "and I will be able to analyze your soil, weather, rotation plans, and tasks."
+        )
+
+    if "soil" in msg_lower or "ph" in msg_lower or "npk" in msg_lower or "fertilizer" in msg_lower:
+        return (
+            f"I found {len(farms)} farm(s) in your account ({', '.join(farm_names)}). "
+            "Check the **Soil** module (`/soil`) for detailed pH, organic matter, and NPK metrics, "
+            "and ensure `LLM_API_KEY` is configured in `.env` for live AI agronomic interpretation."
+        )
+
+    if "task" in msg_lower or "schedule" in msg_lower or "alert" in msg_lower:
+        total_tasks = sum(len(f.get("recent_tasks", [])) for f in farms)
+        return (
+            f"You currently have {total_tasks} recent task(s) logged across {', '.join(farm_names)}. "
+            "You can manage or prioritize them in the **Tasks** page (`/tasks`)."
+        )
+
+    if "rotation" in msg_lower or "crop" in msg_lower or "sequence" in msg_lower:
+        return (
+            f"For your active crops across {', '.join(farm_names)}, check the **Crop Rotation Planner** (`/rotation`) "
+            "for multi-year soil health, water efficiency, and balanced strategy sequences."
+        )
+
+    return (
+        f"Here is your current workspace summary across {', '.join(farm_names)}: "
+        f"{sum(len(f.get('fields', [])) for f in farms)} field(s) tracked. "
+        "Add your `LLM_API_KEY` in the backend `.env` file to unlock full AI reasoning over your telemetry, "
+        "crop rotations, and carbon metrics."
+    )
+
+
+async def generate_assistant_reply(
+    db: Session,
+    user: User,
+    user_message: str,
+    session_id: Optional[str] = None,
+    farm_id: Optional[str] = None,
+    field_id: Optional[str] = None,
+) -> str:
+    """Generate a context-grounded response using Gemini LLM with deterministic fallback."""
+    context = build_user_and_site_context(db, user, farm_id=farm_id, field_id=field_id)
+    history = _get_recent_history(db, session_id=session_id, limit=12)
+
+    api_key = settings.LLM_API_KEY or settings.GEMINI_API_KEY or os.environ.get("LLM_API_KEY") or os.environ.get("GEMINI_API_KEY")
+
+    if not api_key:
+        logger.warning("LLM_API_KEY is not configured; using deterministic fallback.")
+        return _deterministic_fallback(user_message, context)
+
+    system_instruction = f"""You are FieldShift AI, an expert precision-agronomy and farm-management assistant built into the FieldShift AI web platform.
+
+Your job is to give actionable, concrete, data-backed answers tailored specifically to the logged-in user's farms, fields, soil profiles, satellite NDVI/weather telemetry, crop rotation plans, carbon records, and tasks.
+
+### Platform Reference
+{PLATFORM_OVERVIEW}
+
+### Authenticated User & Farm Database Context (JSON)
+{json.dumps(context, indent=2, default=str)}
+
+### Guidelines
+1. Always ground your recommendations in the exact numbers, field names, crop types, soil pH/NPK, weather observations, and tasks present in the User & Farm Database Context above.
+2. If the user asks about a metric or field that has no logged data yet (null/empty in JSON), state that clearly and tell them which FieldShift AI page to use to record or sync it.
+3. Keep answers clear, structured (using concise bullet points or bold metrics where helpful), and practical for a farmer or agronomist.
+4. Never invent telemetry readings or sensor numbers that are not present in the context.
+"""
+
+    try:
+        from google import genai
+        from google.genai import types
+
+        client = genai.Client(api_key=api_key)
+
+        contents: List[types.Content] = []
+        for turn in history:
+            role = "model" if turn["role"] in ("assistant", "model") else "user"
+            contents.append(
+                types.Content(
+                    role=role,
+                    parts=[types.Part.from_text(text=turn["content"])],
+                )
+            )
+
+        # Ensure the latest user message is included if not already in history
+        if not contents or contents[-1].parts[0].text != user_message:
+            contents.append(
+                types.Content(
+                    role="user",
+                    parts=[types.Part.from_text(text=user_message)],
+                )
+            )
+
+        response = await client.aio.models.generate_content(
+            model=settings.LLM_MODEL or "gemini-2.5-flash",
+            contents=contents,
+            config=types.GenerateContentConfig(
+                system_instruction=system_instruction,
+                temperature=0.3,
+            ),
+        )
+
+        if response and response.text:
+            return response.text.strip()
+
+        logger.warning("Empty response returned from Gemini; falling back.")
+        return _deterministic_fallback(user_message, context)
+
+    except Exception as exc:
+        logger.exception("LLM generation failed: %s", exc)
+        return _deterministic_fallback(user_message, context)
+
 
 # Comprehensive Crop Agronomy & Pest Knowledge Base grounded in Kerala Agricultural University (KAU) & ICAR
 CROP_AGRONOMY_KB = {
@@ -531,7 +867,12 @@ class AIAssistantService:
         })
 
         # 5. Check if external LLM API (e.g. Gemini) is configured
-        gemini_api_key = settings.GEMINI_API_KEY or os.environ.get("GEMINI_API_KEY")
+        gemini_api_key = (
+            settings.LLM_API_KEY
+            or settings.GEMINI_API_KEY
+            or os.environ.get("LLM_API_KEY")
+            or os.environ.get("GEMINI_API_KEY")
+        )
         if gemini_api_key and len(gemini_api_key.strip()) > 10:
             llm_reply = await cls._try_call_gemini_llm(
                 api_key=gemini_api_key.strip(),
@@ -1312,12 +1653,15 @@ class AIAssistantService:
         language: str = "en",
     ) -> Optional[Tuple[str, List[str]]]:
         """
-        Attempts to call the Google Gemini API when an API key is provided,
+        Attempts to call the Google Gemini API using google.genai client,
         injecting the farm's live digital twin telemetry and requested language as grounded context.
         """
         try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
-            
+            from google import genai
+            from google.genai import types
+
+            client = genai.Client(api_key=api_key)
+
             lang_prompt_map = {
                 "ml": "You MUST respond entirely in fluent Malayalam (മലയാളം) using appropriate Kerala Agricultural University terminology.",
                 "hi": "You MUST respond entirely in fluent Hindi (हिन्दी) using clear Krishi Vigyan agricultural terminology.",
@@ -1327,13 +1671,13 @@ class AIAssistantService:
             }
             lang_instruction = lang_prompt_map.get(language, "Respond in English.")
 
-            system_prompt = (
-                f"You are the FieldShift AI Farm Assistant, an expert agricultural advisor for {farm.farm_name} in {farm.location_name}.\n"
+            system_instruction = (
+                f"You are the FieldShift AI Farm Assistant, an expert precision-agronomy and farm-management advisor for {farm.farm_name} in {farm.location_name}.\n"
                 f"You are scientifically grounded in the Kerala Agricultural University (KAU) Package of Practices and NASA Earth Science data.\n"
                 f"Language requirement: {lang_instruction}\n\n"
                 f"Live Farm Telemetry:\n"
                 f"- Active Crop: {twin['crop_state'].get('current_crop')}\n"
-                f"- Area: {farm.total_area_acres:.2f} acres\n"
+                f"- Area: {farm.total_area_acres:.2f} acres ({farm.total_area_hectares:.2f} ha)\n"
                 f"- Soil pH: {twin['soil_state'].get('effective_ph')} ({twin['soil_state'].get('ph_category')})\n"
                 f"- Lab Test Verified: {twin['soil_state'].get('has_lab_test')}\n"
                 f"- 30-Day NASA Rainfall: {twin['environmental_state'].get('cumulative_rainfall_30d_mm')} mm\n"
@@ -1342,33 +1686,54 @@ class AIAssistantService:
                 f"- Slope: {twin['terrain_state'].get('slope_mean_deg')} deg\n"
                 f"- Overall Risk Score: {twin['risk_assessment'].get('overall_risk_score')}/100\n\n"
                 f"Rules:\n"
-                f"1. Never recommend synthetic N-P-K quantities unless a lab test is verified.\n"
+                f"1. Never recommend synthetic N-P-K mineral quantities unless a lab test is verified.\n"
                 f"2. Provide actionable, practical advice for smallholders.\n"
-                f"3. Format cleanly in Markdown."
+                f"3. Format cleanly in Markdown with bullet points."
             )
 
-            contents = [{"role": "user", "parts": [{"text": system_prompt + "\n\nUser Question: " + user_msg}]}]
+            contents: List[types.Content] = []
+            for h in history:
+                role = "model" if getattr(h, "role", getattr(h, "sender", "user")) in ("assistant", "model") else "user"
+                contents.append(
+                    types.Content(
+                        role=role,
+                        parts=[types.Part.from_text(text=h.content or "")],
+                    )
+                )
 
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                res = await client.post(url, json={"contents": contents})
-                if res.status_code == 200:
-                    data = res.json()
-                    candidate = data.get("candidates", [])[0]
-                    text = candidate.get("content", {}).get("parts", [])[0].get("text", "")
-                    if text:
-                        tools_executed.append({
-                            "tool_name": "gemini_llm_reasoning",
-                            "description": f"Generated tailored response via Gemini API in {language} with telemetry grounding",
-                            "summary_result": "Grounded LLM inference complete",
-                        })
-                        follow_ups = [
-                            "What crops are most suitable for my soil right now?",
-                            "How do I apply biological pest control?",
-                            "What is the recommended crop rotation?",
-                        ]
-                        return text, follow_ups
-        except Exception:
-            pass  # Fall back to local deterministic engine
+            if not contents or contents[-1].parts[0].text != user_msg:
+                contents.append(
+                    types.Content(
+                        role="user",
+                        parts=[types.Part.from_text(text=user_msg)],
+                    )
+                )
+
+            model_name = settings.LLM_MODEL or "gemini-2.5-flash"
+            response = await client.aio.models.generate_content(
+                model=model_name,
+                contents=contents,
+                config=types.GenerateContentConfig(
+                    system_instruction=system_instruction,
+                    temperature=0.3,
+                ),
+            )
+
+            if response and response.text:
+                tools_executed.append({
+                    "tool_name": "gemini_llm_reasoning",
+                    "description": f"Generated grounded response via Gemini ({model_name}) in {language} with telemetry grounding",
+                    "summary_result": "Context-aware LLM reasoning complete",
+                })
+                follow_ups = [
+                    "What crops are most suitable for my soil right now?",
+                    "How do I apply biological pest control?",
+                    "What is the recommended crop rotation?",
+                ]
+                return response.text.strip(), follow_ups
+
+        except Exception as e:
+            logger.warning(f"Google GenAI call failed, falling back to local engine: {e}")
 
         return None
 

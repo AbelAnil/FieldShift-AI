@@ -29,12 +29,14 @@ import {
   PromptSuggestion,
   fetchSuggestedPrompts,
   sendChatMessage,
+  sendAssistantMessage,
   fetchChatHistory,
   fetchChatSessions,
   createChatSession,
   deleteChatSession,
 } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { useUI } from "@/context/UIContext";
 
 /* ─────────────────────── constants ─────────────────────── */
 
@@ -73,6 +75,7 @@ function relativeTime(iso: string): string {
 
 export default function AssistantPage() {
   const { farms, selectedFarm, selectFarm, token } = useAuth();
+  const { selectedFarmId, selectedFieldId } = useUI();
 
   /* ── chat state ── */
   const [messages, setMessages] = useState<ChatMessageItem[]>([]);
@@ -266,22 +269,31 @@ export default function AssistantPage() {
     setMessages((prev) => [...prev, tempUserMsg]);
 
     try {
-      const response = await sendChatMessage(selectedFarm.id, text, token, sid, language);
-      if (!sid) setActiveSessionId(response.session_id);
+      const activeFarmId = selectedFarmId || selectedFarm.id;
+      const response = await sendAssistantMessage(
+        {
+          message: text,
+          session_id: sid || null,
+          farm_id: activeFarmId,
+          field_id: selectedFieldId || null,
+        },
+        token
+      );
+      if (!sid && response.session_id) setActiveSessionId(response.session_id);
 
       const assistantMsg: ChatMessageItem = {
-        id: response.message_id,
+        id: response.message_id || response.assistant_message?.id || "msg-" + Date.now(),
         session_id: response.session_id,
         sender: "assistant",
         content: response.reply,
-        tools_called: response.tools_executed,
-        citations: response.citations,
-        created_at: new Date().toISOString(),
+        tools_called: response.tools_executed || [],
+        citations: response.citations || [],
+        created_at: response.assistant_message?.created_at || new Date().toISOString(),
       };
       setMessages((prev) => [...prev, assistantMsg]);
 
       /* refresh session list to update message counts */
-      loadSessions(selectedFarm.id, token).catch(() => {});
+      loadSessions(activeFarmId, token).catch(() => {});
     } catch (err: any) {
       setError(err.message || "Failed to receive response from AI Assistant");
     } finally {
@@ -317,18 +329,27 @@ export default function AssistantPage() {
     setMessages((prev) => [...prev, tempUserMsg]);
 
     try {
-      const response = await sendChatMessage(selectedFarm.id, text, token, sessionId, language);
+      const activeFarmId = selectedFarmId || selectedFarm.id;
+      const response = await sendAssistantMessage(
+        {
+          message: text,
+          session_id: sessionId,
+          farm_id: activeFarmId,
+          field_id: selectedFieldId || null,
+        },
+        token
+      );
       const assistantMsg: ChatMessageItem = {
-        id: response.message_id,
+        id: response.message_id || response.assistant_message?.id || "msg-" + Date.now(),
         session_id: response.session_id,
         sender: "assistant",
         content: response.reply,
-        tools_called: response.tools_executed,
-        citations: response.citations,
-        created_at: new Date().toISOString(),
+        tools_called: response.tools_executed || [],
+        citations: response.citations || [],
+        created_at: response.assistant_message?.created_at || new Date().toISOString(),
       };
       setMessages((prev) => [...prev, assistantMsg]);
-      loadSessions(selectedFarm.id, token).catch(() => {});
+      loadSessions(activeFarmId, token).catch(() => {});
     } catch (err: any) {
       setError(err.message || "Failed to receive response");
     } finally {

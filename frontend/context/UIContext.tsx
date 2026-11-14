@@ -30,6 +30,12 @@ interface UIContextType {
   setUILanguage: (lang: UILanguage) => void;
   toggleUILanguage: () => void;
   t: (key: string, defaultText?: string) => string;
+
+  // Active Context Grounding
+  selectedFarmId: string | null;
+  setSelectedFarmId: (id: string | null) => void;
+  selectedFieldId: string | null;
+  setSelectedFieldId: (id: string | null) => void;
 }
 
 const UI_DICTIONARY: Record<string, Record<UILanguage, string>> = {
@@ -66,6 +72,8 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [areaUnit, setAreaUnitState] = useState<AreaUnit>("acres");
   const [uiLanguage, setUILanguageState] = useState<UILanguage>("en");
+  const [selectedFarmId, setSelectedFarmId] = useState<string | null>(null);
+  const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
   const pathname = usePathname();
 
   // Load saved preferences from localStorage if present
@@ -191,6 +199,10 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
         setUILanguage,
         toggleUILanguage,
         t,
+        selectedFarmId,
+        setSelectedFarmId,
+        selectedFieldId,
+        setSelectedFieldId,
       }}
     >
       {children}

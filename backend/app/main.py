@@ -33,6 +33,8 @@ app.add_middleware(
 
 # Register API routes
 app.include_router(api_router)
+from app.api.routes import assistant
+app.include_router(assistant.router)
 
 
 @app.get("/", tags=["Root"])

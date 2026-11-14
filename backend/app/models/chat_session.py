@@ -9,7 +9,7 @@ class ChatSession(Base):
     __tablename__ = "chat_sessions"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    farm_id = Column(String, ForeignKey("farms.id", ondelete="CASCADE"), nullable=False)
+    farm_id = Column(String, ForeignKey("farms.id", ondelete="CASCADE"), nullable=True)
     user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     title = Column(String, default="Agricultural Advisory Session")
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)

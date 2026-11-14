@@ -12,6 +12,13 @@ from app.models.digital_twin_snapshot import DigitalTwinSnapshot
 from app.models.chat_session import ChatSession
 from app.models.chat_message import ChatMessage
 from app.models.task import Task
+from app.models.carbon import (
+    CarbonMethodology,
+    CarbonEligibility,
+    CarbonEstimate,
+    CarbonEvidence,
+    CarbonPartner,
+)
 
 __all__ = [
     "User",
@@ -28,4 +35,9 @@ __all__ = [
     "ChatSession",
     "ChatMessage",
     "Task",
+    "CarbonMethodology",
+    "CarbonEligibility",
+    "CarbonEstimate",
+    "CarbonEvidence",
+    "CarbonPartner",
 ]

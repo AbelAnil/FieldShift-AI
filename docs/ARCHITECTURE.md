@@ -3,69 +3,66 @@
 **Project:** FieldShift AI  
 **Challenge:** NASA Space Apps Challenge 2026, Field Shift: Adapting Farms with NASA Data  
 **Team:** ChungusReloaded (solo development)  
-**Initial Region:** Kerala, India  
+**Initial Region:** Kerala, India (Global Scope via Region Packs)  
 **Development Environment:** Windows laptop (local-first)  
 **Future Hosting:** Raspberry Pi, subject to hardware evaluation  
-**Document Version:** 3.0, consolidated final plan  
+**Document Version:** 3.2, consolidated plan with Carbon Credit Readiness Module  
 **Date:** 14 November 2026  
 
 ---
 
 ## 1. Executive Summary
 
-FieldShift AI is an agricultural decision-support platform that turns NASA Earth observations into practical farm decisions. For each registered field it builds a digital twin combining satellite data, soil information, terrain, crop knowledge and farmer records. On top of that twin it provides crop suitability scoring, three alternative crop rotation strategies, what-if simulation, an AI farm assistant and farmer-approved reminders.
+FieldShift AI is an agricultural decision-support platform that transforms NASA Earth observations and local farm knowledge into practical farming decisions. For each registered field, it constructs a multi-layer predictive digital twin combining satellite precipitation, microclimate, soil intelligence, terrain hydrology, crop phenology, and farmer records. On top of that twin, it provides weighted crop suitability scoring, algorithmic multi-year crop rotation optimization, what-if stress simulation, an AI farm assistant, automated condition-based tasks, and a Carbon Credit Readiness & Filing Assistant.
 
 ### Core Workflow
 ```text
-NASA Earth Data → Environmental Analysis → Farm Digital Twin → Crop Suitability → Rotation Optimization → AI Guidance → Actionable Farm Tasks
+NASA Earth Data → Environmental Analysis → Farm Digital Twin → Crop Suitability → Rotation Optimization → AI Guidance → Actionable Farm Tasks → Carbon Credit Readiness
 ```
 
 ### Staged Build Sequence
-| Stage | Focus |
-|---|---|
-| **Now (Phase 0)** | Next.js, FastAPI, local development, basic working application |
-| **Next (Phase 1)** | PostgreSQL + PostGIS, farm registration, map boundaries |
-| **Then (Phases 2–5)** | NASA data, soil analysis, crop suitability, rotation (terrain follows) |
-| **Later (Phases 6–8)** | Digital twin predictions, AI assistant, reminders |
-| **Finally (Phase 9)** | Raspberry Pi deployment testing |
+| Stage | Phase | Focus | Status |
+|---|---|---|---|
+| **Now** | **Phase 0** | Next.js 16, FastAPI, local development, basic working application | Completed |
+| **Next** | **Phase 1** | PostgreSQL/SQLite + PostGIS, farm registration, map boundaries, multi-tenant isolation | Completed |
+| **Then** | **Phase 2** | NASA Earth Observation Engine (GPM IMERG, NASA POWER, SMAP, Landsat/Sentinel NDVI/NDMI) | Completed |
+| **Then** | **Phase 3 & 4** | Soil Intelligence (SoilGrids + lab tests), Terrain Hydrology (NASADEM), Kerala Crop DB (12 crops), Weighted Suitability Engine | Completed |
+| **Then** | **Phase 5 & 6** | Multi-Year Crop Rotation Optimizer & Predictive Digital Twin with What-If Stress Simulator | Completed |
+| **Later** | **Phase 7** | AI Farm Assistant with deterministic tool calling and KAU/ICAR grounding | Completed |
+| **Later** | **Phase 8** | Smart Tasks & Reminders, Condition Alert Engine & Farm Decision Dossiers | Completed |
+| **Later** | **Phase 9** | Carbon Credit Readiness & Filing Assistant (Methodologies, Aggregation, Evidence Packs) | In Progress |
+| **Finally**| **Phase 10** | Raspberry Pi edge deployment, resource optimization, offline readiness | Planned |
 
 ---
 
 ## 2. System Architecture & Tech Stack
 
-- **Architecture:** Modular monolith (FastAPI backend + Next.js frontend + PostgreSQL/PostGIS)
-- **Frontend Framework:** Next.js (App Router), TypeScript, Tailwind CSS, shadcn/ui, MapLibre GL JS, Terra Draw, Recharts
-- **Backend Framework:** Python 3.11, FastAPI, Pydantic v2, Uvicorn
-- **Database:** PostgreSQL + PostGIS (SQLAlchemy ORM + Alembic)
-- **Geospatial & Analytics:** GeoPandas, Rasterio, GDAL, WhiteboxTools, PySheds, NumPy, Pandas, SciPy, OR-Tools
-- **AI Assistant:** Provider-independent LLM interface (hosted free tier / Ollama) with tool-calling and deterministic fallback
+- **Architecture:** Modular monolith (FastAPI backend + Next.js frontend + SQLite/PostgreSQL)
+- **Frontend Framework:** Next.js 16 (App Router), TypeScript, Tailwind CSS, MapLibre GL JS, Terra Draw, Recharts, Lucide React
+- **Backend Framework:** Python 3.11, FastAPI, Pydantic v2, Uvicorn, SQLAlchemy ORM
+- **Database:** SQLite (development default) / PostgreSQL + PostGIS (production-ready)
+- **Geospatial & Analytics:** Shapely, NumPy, Pandas, Geodesic spherical geometry, WhiteboxTools / PySheds compatible
+- **AI Assistant:** Provider-independent engine featuring deterministic tool-calling against live farm telemetry
+- **Carbon Engine:** Rule-based eligibility screening, IPCC Tier 1/2 indicative yield ranges, Verra/Gold Standard methodology alignment, aggregation packaging
 
 ---
 
-## 3. Implementation Roadmap
+## 3. Carbon Credit Module (Phase 9 Specification)
 
-### Phase 0: Foundation Application (NOW)
-- FastAPI backend with CORS, environment configuration, `/api/health`.
-- Next.js 15 App Router frontend with responsive layout and navigation shell.
-- Verified frontend-to-backend communication.
-- Documented quickstart in README for reproducible setup.
+### 3.1 Honest Positioning
+- FieldShift AI **does not issue carbon credits** (credits are issued by registries like Verra or Gold Standard after independent validation/verification).
+- FieldShift AI **does not guarantee income**; all financial projections are displayed as conservative low/expected/high ranges with fee deductions.
+- Smallholders (1-3 acres in Kerala) require **aggregation** via FPOs or project developers to achieve economic viability.
 
-### Phase 1: Database, Farm Registration & Map Boundaries (NEXT)
-- PostgreSQL + PostGIS schema and migrations (Alembic).
-- Farm registration and field management.
-- MapLibre GL JS + Terra Draw interactive boundary editor.
-- GeoJSON upload validation & area computation.
+### 3.2 Candidate Kerala Pathways
+1. **Agroforestry & Tree Planting:** Coconut, intercropped pepper, fruit trees, shaded coffee/tea.
+2. **Rice Methane Abatement:** Alternate Wetting and Drying (AWD).
+3. **Soil Organic Carbon (SOC) Improvement:** Cover cropping, residue retention, reduced tillage, green manuring.
+4. **Nitrogen Fertilizer Optimization:** Precision split application preventing N2O volatilization.
 
-### Phases 2–5: Data and Decision Engines (THEN)
-- **Phase 2 (Earth Observation):** GPM IMERG rainfall, NASA POWER climate, Landsat/MODIS/Sentinel-2 vegetation indices, SMAP soil moisture context.
-- **Phase 3 (Soil & Terrain):** Farmer soil test records + SoilGrids modelled estimates; NASADEM elevation, slope, flow accumulation, water accumulation risk.
-- **Phase 4 (Crop Intelligence):** Kerala crop database (10–15 crops) with multi-factor suitability scoring and missing-data transparency.
-- **Phase 5 (Rotation Optimization):** Three constraint-driven rotation strategies: Soil Health Priority, Water Efficiency Priority, and Balanced Strategy.
-
-### Phases 6–8: Intelligence Layer (LATER)
-- **Phase 6 (Digital Twin):** Field state snapshots, environmental risk indicators, what-if simulator.
-- **Phase 7 (AI Farm Assistant):** Tool-connected conversational assistant with strict agricultural safeguards.
-- **Phase 8 (Tasks & Reports):** Condition-based reminder triggers, user approval workflow, downloadable reports.
-
-### Phase 9: Deployment & Portability (FINALLY)
-- Docker Compose configuration, backup/restore procedures, Raspberry Pi evaluation.
+### 3.3 Core Capabilities
+- **Eligibility Screening:** Evaluates farm area, current crop, irrigation, and practices against approved methodologies.
+- **Indicative Yield & Revenue Calculator:** Computes tCO2e/ha/year, gross credit value ($10-$30/t), developer/verifier commission (25-40%), and farmer net return range.
+- **Evidence Registry & Gap Report:** Tracks geo-tagged photos, planting dates, soil test certificates, and AWD water depth logs.
+- **Aggregation Partner Directory:** Connects smallholders with verified FPOs, cooperatives, and carbon developers.
+- **Submission Dossier Export:** Prepares complete evidence packages formatted for project developer intake.

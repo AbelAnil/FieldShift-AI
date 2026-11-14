@@ -13,6 +13,7 @@ import {
   Bot,
   CalendarCheck,
   FileText,
+  Coins,
   Sprout,
 } from "lucide-react";
 
@@ -26,6 +27,7 @@ const navigationItems = [
   { name: "Crop Rotation Planner", href: "/rotation", icon: RotateCcw },
   { name: "AI Farm Assistant", href: "/assistant", icon: Bot },
   { name: "Tasks & Reminders", href: "/tasks", icon: CalendarCheck },
+  { name: "Carbon Credits", href: "/carbon", icon: Coins },
   { name: "Reports", href: "/reports", icon: FileText },
 ];
 

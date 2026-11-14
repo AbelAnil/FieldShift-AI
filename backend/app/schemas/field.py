@@ -36,3 +36,4 @@ class FieldOut(FieldBase):
 
     class Config:
         from_attributes = True
+

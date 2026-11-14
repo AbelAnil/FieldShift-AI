@@ -17,3 +17,4 @@ class User(Base):
 
     # Relationships
     farms = relationship("Farm", back_populates="owner", cascade="all, delete-orphan")
+

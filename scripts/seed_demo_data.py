@@ -5,7 +5,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
 from app.database import SessionLocal, engine, Base
-from app.models import User, Farm, Field
+from app.models import User, Farm, Field, DataSource, EnvironmentalObservation, VegetationObservation
 from app.core.security import get_password_hash
 from app.utils.geo import validate_and_process_geojson
 
@@ -15,6 +15,60 @@ def seed_data():
     db = SessionLocal()
 
     try:
+        # Seed Data Sources registry
+        data_sources_list = [
+            {
+                "dataset_name": "NASA GPM IMERG v07",
+                "provider": "NASA Precipitation Processing System (PPS)",
+                "parameter": "Precipitation Rate, Daily & 7-day Cumulative Rainfall",
+                "spatial_resolution": "0.1° (~10 km)",
+                "temporal_resolution": "Daily / 30-minute late run",
+                "source_url": "https://gpm.nasa.gov/data/imerg",
+                "license": "NASA Open Data Policy (No cost)",
+                "is_nasa_dataset": "true",
+                "scientific_limitations": "Multi-satellite gridded estimate. Captures convective rainfall patterns, but cannot replace physical local rain gauges.",
+            },
+            {
+                "dataset_name": "NASA POWER Agroclimatology",
+                "provider": "NASA Langley Research Center",
+                "parameter": "T2M (Air Temp), Surface Solar Irradiance, Relative Humidity",
+                "spatial_resolution": "0.5° x 0.5° gridded",
+                "temporal_resolution": "Daily (~2-day latency)",
+                "source_url": "https://power.larc.nasa.gov",
+                "license": "Open Access",
+                "is_nasa_dataset": "true",
+                "scientific_limitations": "Assimilation of GEOS models and satellite radiometers; representative of regional microclimate.",
+            },
+            {
+                "dataset_name": "NASA SMAP L4 Global Enhanced",
+                "provider": "NASA Jet Propulsion Laboratory (JPL)",
+                "parameter": "Surface and Root-Zone Soil Moisture (m³/m³)",
+                "spatial_resolution": "~9 km gridded",
+                "temporal_resolution": "Daily",
+                "source_url": "https://smap.jpl.nasa.gov",
+                "license": "Open Access",
+                "is_nasa_dataset": "true",
+                "scientific_limitations": "Coarse 9 km passive microwave footprint. Shows landscape-scale drying and wetting cycles; not an in-situ farm sensor.",
+            },
+            {
+                "dataset_name": "Landsat 8/9 OLI-2 & Sentinel-2 MSI",
+                "provider": "NASA / USGS & ESA Copernicus (Supplementary)",
+                "parameter": "NDVI (Canopy Greenness), NDMI (Canopy Moisture Stress)",
+                "spatial_resolution": "10 m (Sentinel-2) / 30 m (Landsat 8/9)",
+                "temporal_resolution": "5 to 16 days",
+                "source_url": "https://landsat.gsfc.nasa.gov",
+                "license": "Open Access",
+                "is_nasa_dataset": "mixed",
+                "scientific_limitations": "Cloud-filtered optical surface reflectance. Indicates foliar vigor, not a definitive diagnosis of plant disease.",
+            },
+        ]
+
+        for ds in data_sources_list:
+            existing_ds = db.query(DataSource).filter(DataSource.dataset_name == ds["dataset_name"]).first()
+            if not existing_ds:
+                db.add(DataSource(**ds))
+        db.commit()
+        print("Seeded Earth Observation data sources registry.")
         # Check if demo farmer 1 already exists
         email1 = "thomas.kerala@fieldshift.ai"
         user1 = db.query(User).filter(User.email == email1).first()
@@ -184,3 +238,4 @@ def seed_data():
 
 if __name__ == "__main__":
     seed_data()
+

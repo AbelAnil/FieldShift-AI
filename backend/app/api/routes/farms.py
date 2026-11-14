@@ -228,3 +228,4 @@ def list_fields(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access forbidden.")
 
     return farm.fields
+

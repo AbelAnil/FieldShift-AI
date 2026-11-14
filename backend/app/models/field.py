@@ -42,3 +42,4 @@ class Field(Base):
             self.boundary_geojson_raw = value
         else:
             self.boundary_geojson_raw = json.dumps(value)
+

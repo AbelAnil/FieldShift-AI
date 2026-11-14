@@ -14,3 +14,4 @@ class GeoJSONValidationResponse(BaseModel):
     centroid_lat: Optional[float] = None
     centroid_lon: Optional[float] = None
     cleaned_geojson: Optional[Dict[str, Any]] = None
+

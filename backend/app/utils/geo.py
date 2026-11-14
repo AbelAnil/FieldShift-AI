@@ -104,3 +104,4 @@ def validate_and_process_geojson(geojson_data: Dict[str, Any]) -> Tuple[Dict[str
         raise ValueError("Coordinates are out of WGS84 geographical bounds [-180, 180], [-90, 90].")
 
     return mapping(geom_obj), area_hectares, area_acres, centroid_coords
+

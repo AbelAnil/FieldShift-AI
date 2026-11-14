@@ -42,3 +42,4 @@ class FarmOut(FarmBase):
 
     class Config:
         from_attributes = True
+

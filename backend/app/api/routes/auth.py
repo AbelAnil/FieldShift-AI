@@ -95,3 +95,4 @@ def demo_login(farmer_id: int = 1, db: Session = Depends(get_db)):
     )
 
     return Token(access_token=access_token, token_type="bearer", user=UserOut.model_validate(user))
+

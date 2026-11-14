@@ -6,6 +6,20 @@ class ChatRequest(BaseModel):
     farm_id: str
     message: str
     session_id: Optional[str] = None
+    language: Optional[str] = "en"
+
+
+class ChatSessionCreate(BaseModel):
+    title: Optional[str] = "New Topic"
+
+
+class ChatSessionOut(BaseModel):
+    id: str
+    farm_id: str
+    title: str
+    created_at: str
+    updated_at: str
+    message_count: int = 0
 
 
 class ToolCallInfo(BaseModel):

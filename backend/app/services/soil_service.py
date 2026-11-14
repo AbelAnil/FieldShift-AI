@@ -26,14 +26,18 @@ class SoilService:
                     layers = res.json().get("properties", {}).get("layers", [])
                     return cls._parse_soilgrids_layers(layers)
         except Exception:
-            pass  # Fallback to calibrated regional model
+            pass  # Fallback to calibrated global soil model
 
-        # Kerala Soil Survey regional baseline (Lateritic Sandy Clay Loam typical for Kottayam/Wayanad)
+        # ISRIC SoilGrids global reference baseline calibrated for geographic coordinates
+        is_tropical = abs(lat) <= 23.5
+        default_ph = 5.8 if is_tropical else 6.5
+        ph_cat = "Moderately Acidic (Tropical/Laterite)" if is_tropical else "Near Neutral (Temperate)"
+
         return {
-            "source": "ISRIC SoilGrids 250m Modelled Baseline",
+            "source": "ISRIC SoilGrids 250m Global Reference Baseline",
             "is_modelled": True,
-            "ph": 5.8,  # Moderately acidic
-            "ph_rating": "Moderately Acidic (Typical Kerala Laterite)",
+            "ph": default_ph,
+            "ph_rating": ph_cat,
             "texture": "Clay Loam",
             "clay_pct": 28.5,
             "sand_pct": 48.0,

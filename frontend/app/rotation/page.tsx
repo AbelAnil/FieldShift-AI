@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import {
   evaluateCropSuitability,
+  fetchFarmRotation,
   Farm,
   CropSuitabilityResponse,
   CropSuitabilityEvaluation,
+  RotationStrategy,
 } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -27,6 +29,7 @@ import {
 export default function RotationPage() {
   const { farms, selectedFarm, selectFarm, token, isBackendOnline } = useAuth();
   const [suitabilityData, setSuitabilityData] = useState<CropSuitabilityResponse | null>(null);
+  const [rotationStrategies, setRotationStrategies] = useState<RotationStrategy[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [expandedCropId, setExpandedCropId] = useState<string | null>(null);
@@ -34,8 +37,17 @@ export default function RotationPage() {
   const loadSuitability = async (farmId: string, authToken: string) => {
     setRefreshing(true);
     try {
-      const data = await evaluateCropSuitability(farmId, authToken);
-      setSuitabilityData(data);
+      const [suitData, rotData] = await Promise.all([
+        evaluateCropSuitability(farmId, authToken),
+        fetchFarmRotation(farmId, authToken).catch((err) => {
+          console.warn("Failed to fetch rotation strategies:", err);
+          return null;
+        }),
+      ]);
+      setSuitabilityData(suitData);
+      if (rotData?.strategies) {
+        setRotationStrategies(rotData.strategies);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -70,7 +82,7 @@ export default function RotationPage() {
           </div>
           <h1 className="text-2xl font-bold text-white mt-1">Crop Suitability & Rotation Planner</h1>
           <p className="text-sm text-zinc-400">
-            Multi-factor suitability scoring and multi-year rotation strategies grounded in Kerala agricultural research.
+            Multi-factor suitability scoring and multi-year rotation strategies grounded in global FAO Ecocrop guidelines and agricultural extension research.
           </p>
         </div>
 
@@ -262,100 +274,169 @@ export default function RotationPage() {
             <span>Three Alternative Crop Rotation Strategies</span>
           </h2>
           <p className="text-xs text-zinc-400">
-            Multi-year crop sequences preventing soil-borne monoculture depletion, optimized for Kerala agro-climatic zones.
+            Multi-year crop sequences preventing soil-borne monoculture depletion, dynamically optimized for the farm's active crop and soil conditions.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Strategy A */}
-          <div className="p-6 rounded-3xl bg-zinc-900/60 border border-emerald-500/30 space-y-4 relative">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Strategy A</span>
-              <Leaf className="w-4 h-4 text-emerald-400" />
-            </div>
-            <h3 className="text-lg font-bold text-white">Soil Health Priority</h3>
-            <p className="text-xs text-zinc-400 leading-relaxed">
-              Prioritizes leguminous crops (Cowpea, Green Gram) to replenish biological nitrogen, improve organic matter,
-              and break continuous monoculture pest cycles.
-            </p>
-            <div className="space-y-2 text-xs border-t border-zinc-800 pt-3">
-              <div className="flex justify-between py-1 border-b border-zinc-800/50">
-                <span className="text-zinc-400">Year 1:</span>{" "}
-                <span className="font-semibold text-white">Banana (Robusta)</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-zinc-800/50">
-                <span className="text-zinc-400">Year 2:</span>{" "}
-                <span className="font-semibold text-emerald-400">Cowpea (Vigna unguiculata)</span>
-              </div>
-              <div className="flex justify-between py-1">
-                <span className="text-zinc-400">Year 3:</span>{" "}
-                <span className="font-semibold text-white">Cassava / Tapioca</span>
-              </div>
-            </div>
-            <div className="text-[10px] text-emerald-400/90 pt-1 font-mono">
-              Soil Benefit: +45 kg/ha residual N & enhanced microbial biomass.
-            </div>
-          </div>
+          {rotationStrategies.length > 0 ? (
+            rotationStrategies.map((strat, idx) => {
+              const borderColors = [
+                "border-emerald-500/30 text-emerald-400",
+                "border-cyan-500/30 text-cyan-400",
+                "border-amber-500/30 text-amber-400",
+              ];
+              const badgeStyle = borderColors[idx % 3];
 
-          {/* Strategy B */}
-          <div className="p-6 rounded-3xl bg-zinc-900/60 border border-cyan-500/30 space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">Strategy B</span>
-              <Droplets className="w-4 h-4 text-cyan-400" />
-            </div>
-            <h3 className="text-lg font-bold text-white">Water Efficiency Priority</h3>
-            <p className="text-xs text-zinc-400 leading-relaxed">
-              Selects lower water-demand crops with high drought resilience, aligning planting windows strictly with
-              historical NASA GPM monsoon precipitation patterns.
-            </p>
-            <div className="space-y-2 text-xs border-t border-zinc-800 pt-3">
-              <div className="flex justify-between py-1 border-b border-zinc-800/50">
-                <span className="text-zinc-400">Year 1:</span>{" "}
-                <span className="font-semibold text-white">Maize (Zea mays)</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-zinc-800/50">
-                <span className="text-zinc-400">Year 2:</span>{" "}
-                <span className="font-semibold text-cyan-400">Black Gram (Urad)</span>
-              </div>
-              <div className="flex justify-between py-1">
-                <span className="text-zinc-400">Year 3:</span>{" "}
-                <span className="font-semibold text-white">Turmeric (Curcuma longa)</span>
-              </div>
-            </div>
-            <div className="text-[10px] text-cyan-400/90 pt-1 font-mono">
-              Water Benefit: ~35% lower irrigation requirement than continuous banana.
-            </div>
-          </div>
+              return (
+                <div
+                  key={strat.strategy_id}
+                  className={`p-6 rounded-3xl bg-zinc-900/60 border ${badgeStyle.split(" ")[0]} space-y-4 flex flex-col justify-between`}
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className={`text-xs font-semibold ${badgeStyle.split(" ")[1]} uppercase tracking-wider`}>
+                        {strat.strategy_name.split(":")[0] || `Strategy ${String.fromCharCode(65 + idx)}`}
+                      </span>
+                      <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300">
+                        Score: {strat.overall_score}/100
+                      </span>
+                    </div>
 
-          {/* Strategy C */}
-          <div className="p-6 rounded-3xl bg-zinc-900/60 border border-amber-500/30 space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Strategy C</span>
-              <RotateCcw className="w-4 h-4 text-amber-400" />
-            </div>
-            <h3 className="text-lg font-bold text-white">Balanced Strategy</h3>
-            <p className="text-xs text-zinc-400 leading-relaxed">
-              Equilibrates market value with soil conservation and seasonal labor feasibility, following Kerala Agricultural
-              University (KAU) intercropping guidance.
-            </p>
-            <div className="space-y-2 text-xs border-t border-zinc-800 pt-3">
-              <div className="flex justify-between py-1 border-b border-zinc-800/50">
-                <span className="text-zinc-400">Year 1:</span>{" "}
-                <span className="font-semibold text-white">Banana (Nendran)</span>
+                    <div>
+                      <h3 className="text-lg font-bold text-white">{strat.focus_area}</h3>
+                      <p className="text-xs text-zinc-400 leading-relaxed mt-1">{strat.rationale}</p>
+                    </div>
+
+                    <div className="space-y-2 text-xs border-t border-zinc-800 pt-3">
+                      {strat.steps.map((step) => (
+                        <div
+                          key={step.year}
+                          className="py-1.5 border-b border-zinc-800/50 last:border-0 space-y-1"
+                        >
+                          <div className="flex justify-between items-center">
+                            <span className="text-zinc-400 font-medium">Year {step.year}:</span>
+                            <span className="font-semibold text-white flex items-center gap-1.5">
+                              {step.crop_name}
+                              {step.nitrogen_fixation && (
+                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">
+                                  Fixes N₂
+                                </span>
+                              )}
+                            </span>
+                          </div>
+                          <div className="text-[10px] text-zinc-500 italic">
+                            {step.role} • {step.duration_days}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-zinc-800/60 space-y-1 text-[10px]">
+                    <div className="text-emerald-400/90 font-mono">
+                      Soil Impact: {strat.soil_health_delta}
+                    </div>
+                    <div className="text-cyan-400/90 font-mono">
+                      Water: {strat.water_efficiency_rating}
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <>
+              {/* Strategy A Fallback */}
+              <div key="fallback-strategy-a" className="p-6 rounded-3xl bg-zinc-900/60 border border-emerald-500/30 space-y-4 relative">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Strategy A</span>
+                  <Leaf className="w-4 h-4 text-emerald-400" />
+                </div>
+                <h3 className="text-lg font-bold text-white">Soil Health Priority</h3>
+                <p className="text-xs text-zinc-400 leading-relaxed">
+                  Prioritizes leguminous crops (Cowpea, Green Gram) to replenish biological nitrogen, improve organic matter,
+                  and break continuous monoculture pest cycles.
+                </p>
+                <div className="space-y-2 text-xs border-t border-zinc-800 pt-3">
+                  <div className="flex justify-between py-1 border-b border-zinc-800/50">
+                    <span className="text-zinc-400">Year 1:</span>{" "}
+                    <span className="font-semibold text-white">Banana (Robusta)</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-zinc-800/50">
+                    <span className="text-zinc-400">Year 2:</span>{" "}
+                    <span className="font-semibold text-emerald-400">Cowpea (Vigna unguiculata)</span>
+                  </div>
+                  <div className="flex justify-between py-1">
+                    <span className="text-zinc-400">Year 3:</span>{" "}
+                    <span className="font-semibold text-white">Cassava / Tapioca</span>
+                  </div>
+                </div>
+                <div className="text-[10px] text-emerald-400/90 pt-1 font-mono">
+                  Soil Benefit: +45 kg/ha residual N & enhanced microbial biomass.
+                </div>
               </div>
-              <div className="flex justify-between py-1 border-b border-zinc-800/50">
-                <span className="text-zinc-400">Year 2:</span>{" "}
-                <span className="font-semibold text-amber-400">Vegetable Cowpea</span>
+
+              {/* Strategy B Fallback */}
+              <div key="fallback-strategy-b" className="p-6 rounded-3xl bg-zinc-900/60 border border-cyan-500/30 space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">Strategy B</span>
+                  <Droplets className="w-4 h-4 text-cyan-400" />
+                </div>
+                <h3 className="text-lg font-bold text-white">Water Efficiency Priority</h3>
+                <p className="text-xs text-zinc-400 leading-relaxed">
+                  Selects lower water-demand crops with high drought resilience, aligning planting windows strictly with
+                  historical NASA GPM monsoon precipitation patterns.
+                </p>
+                <div className="space-y-2 text-xs border-t border-zinc-800 pt-3">
+                  <div className="flex justify-between py-1 border-b border-zinc-800/50">
+                    <span className="text-zinc-400">Year 1:</span>{" "}
+                    <span className="font-semibold text-white">Maize (Zea mays)</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-zinc-800/50">
+                    <span className="text-zinc-400">Year 2:</span>{" "}
+                    <span className="font-semibold text-cyan-400">Black Gram (Urad)</span>
+                  </div>
+                  <div className="flex justify-between py-1">
+                    <span className="text-zinc-400">Year 3:</span>{" "}
+                    <span className="font-semibold text-white">Turmeric (Curcuma longa)</span>
+                  </div>
+                </div>
+                <div className="text-[10px] text-cyan-400/90 pt-1 font-mono">
+                  Water Benefit: ~35% lower irrigation requirement than continuous banana.
+                </div>
               </div>
-              <div className="flex justify-between py-1">
-                <span className="text-zinc-400">Year 3:</span>{" "}
-                <span className="font-semibold text-white">Ginger (Zingiber officinale)</span>
+
+              {/* Strategy C Fallback */}
+              <div key="fallback-strategy-c" className="p-6 rounded-3xl bg-zinc-900/60 border border-amber-500/30 space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Strategy C</span>
+                  <RotateCcw className="w-4 h-4 text-amber-400" />
+                </div>
+                <h3 className="text-lg font-bold text-white">Balanced Strategy</h3>
+                <p className="text-xs text-zinc-400 leading-relaxed">
+                  Equilibrates market value with soil conservation and seasonal labor feasibility, following Kerala Agricultural
+                  University (KAU) intercropping guidance.
+                </p>
+                <div className="space-y-2 text-xs border-t border-zinc-800 pt-3">
+                  <div className="flex justify-between py-1 border-b border-zinc-800/50">
+                    <span className="text-zinc-400">Year 1:</span>{" "}
+                    <span className="font-semibold text-white">Banana (Nendran)</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-zinc-800/50">
+                    <span className="text-zinc-400">Year 2:</span>{" "}
+                    <span className="font-semibold text-amber-400">Vegetable Cowpea</span>
+                  </div>
+                  <div className="flex justify-between py-1">
+                    <span className="text-zinc-400">Year 3:</span>{" "}
+                    <span className="font-semibold text-white">Ginger (Zingiber officinale)</span>
+                  </div>
+                </div>
+                <div className="text-[10px] text-amber-400/90 pt-1 font-mono">
+                  Economic Benefit: Maximizes market revenue while breaking pest cycles.
+                </div>
               </div>
-            </div>
-            <div className="text-[10px] text-amber-400/90 pt-1 font-mono">
-              Economic Benefit: Maximizes market revenue while breaking pest cycles.
-            </div>
-          </div>
+            </>
+          )}
         </div>
       </div>
     </div>

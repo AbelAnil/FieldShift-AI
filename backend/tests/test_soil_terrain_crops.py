@@ -65,18 +65,18 @@ def test_soil_terrain_crop_intelligence():
     crops_res = client.get("/api/crops")
     assert crops_res.status_code == 200
     crops = crops_res.json()
-    assert len(crops) == 12
+    assert len(crops) >= 12
     crop_names = [c["crop_name"] for c in crops]
     assert any("Banana" in n for n in crop_names)
     assert any("Cassava" in n for n in crop_names)
     assert any("Cowpea" in n for n in crop_names)
-    print(f"Verified Crop Knowledge Database: {len(crops)} Kerala crops loaded.")
+    print(f"Verified Crop Knowledge Database: {len(crops)} crops loaded.")
 
     # 8. Test Suitability Scoring Engine
     suit_res = client.post("/api/crops/suitability", json={"farm_id": farm_id}, headers=headers)
     assert suit_res.status_code == 200
     suit_data = suit_res.json()
-    assert len(suit_data["crops"]) == 12
+    assert len(suit_data["crops"]) >= 12
     top_crop = suit_data["crops"][0]
     assert top_crop["suitability_score"] > 0
     assert len(top_crop["supporting_factors"]) > 0

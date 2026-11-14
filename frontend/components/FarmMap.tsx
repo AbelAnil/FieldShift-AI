@@ -4,6 +4,10 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Farm, validateGeoJSON } from "@/lib/api";
+
+if (typeof window !== "undefined") {
+  maplibregl.setWorkerUrl("/maplibre-gl-worker.mjs");
+}
 import { MapPin, Navigation, Compass, Layers, Check, RefreshCw, Undo2, Trash2, MousePointerClick } from "lucide-react";
 
 interface FarmMapProps {
@@ -14,11 +18,15 @@ interface FarmMapProps {
   onPolygonCreated?: (geojson: any, areaHa: number, areaAc: number) => void;
 }
 
-const KERALA_PRESETS = [
-  { name: "Kanjirappally", coords: [76.7865, 9.5542] as [number, number], zoom: 14 },
-  { name: "Wayanad", coords: [76.13, 11.685] as [number, number], zoom: 14 },
-  { name: "Palakkad", coords: [76.6548, 10.7867] as [number, number], zoom: 13 },
-  { name: "Kuttanad", coords: [76.435, 9.498] as [number, number], zoom: 13 },
+const GLOBAL_PRESETS = [
+  { name: "Kerala (India)", coords: [76.7865, 9.5542] as [number, number], zoom: 14 },
+  { name: "Iowa Corn Belt (USA)", coords: [-93.5, 42.0] as [number, number], zoom: 12 },
+  { name: "Cerrado (Brazil)", coords: [-55.5, -12.5] as [number, number], zoom: 12 },
+  { name: "Pampas (Argentina)", coords: [-60.5, -34.0] as [number, number], zoom: 12 },
+  { name: "Rift Valley (Kenya)", coords: [36.0, -0.3] as [number, number], zoom: 12 },
+  { name: "Andalucia (Spain)", coords: [-4.5, 37.4] as [number, number], zoom: 12 },
+  { name: "Punjab (India)", coords: [75.8, 30.9] as [number, number], zoom: 12 },
+  { name: "Wayanad (India)", coords: [76.13, 11.685] as [number, number], zoom: 14 },
 ];
 
 /**
@@ -643,21 +651,28 @@ export default function FarmMap({
         </div>
       )}
 
-      {/* Kerala District Presets */}
-      <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-1.5 bg-zinc-900/90 backdrop-blur p-1.5 rounded-xl border border-zinc-800 shadow-md">
-        <span className="text-[10px] uppercase font-bold text-zinc-400 px-2 py-1 flex items-center gap-1">
-          <Compass className="w-3 h-3 text-emerald-400" />
-          <span>Kerala:</span>
+      {/* Global Agricultural Region Presets & Coordinate Jump */}
+      <div className="absolute top-3 left-3 z-10 flex flex-wrap items-center gap-1.5 bg-zinc-900/95 backdrop-blur p-1.5 rounded-xl border border-zinc-800 shadow-md text-xs">
+        <span className="text-[10px] uppercase font-bold text-zinc-400 px-1.5 py-1 flex items-center gap-1">
+          <Compass className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="hidden sm:inline">Global Regions:</span>
         </span>
-        {KERALA_PRESETS.map((preset) => (
-          <button
-            key={preset.name}
-            onClick={() => flyToPreset(preset.coords, preset.zoom)}
-            className="px-2.5 py-1 text-xs rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition font-medium"
-          >
-            {preset.name}
-          </button>
-        ))}
+        <select
+          onChange={(e) => {
+            const idx = parseInt(e.target.value, 10);
+            if (!isNaN(idx) && GLOBAL_PRESETS[idx]) {
+              flyToPreset(GLOBAL_PRESETS[idx].coords, GLOBAL_PRESETS[idx].zoom);
+            }
+          }}
+          defaultValue="0"
+          className="bg-zinc-800 text-zinc-200 text-xs px-2.5 py-1 rounded-lg border border-zinc-700 font-medium focus:outline-none cursor-pointer"
+        >
+          {GLOBAL_PRESETS.map((preset, idx) => (
+            <option key={preset.name} value={idx}>
+              {preset.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Drawing Toolbar Overlay */}

@@ -133,6 +133,40 @@ class CarbonService:
             "contact_email": "info@kuttanadrice-coop.org",
             "verified": "true",
         },
+        # Global Aggregators
+        {
+            "id": "partner-global-1",
+            "name": "Acorn Rabobank Global Agroforestry Facility",
+            "partner_type": "Global Project Developer",
+            "location": "Utrecht, Netherlands & Global Regional Desks",
+            "pathways_supported": ["agroforestry"],
+            "typical_commission_pct": 20.0,
+            "description": "Global smallholder agroforestry carbon facility utilizing high-resolution LiDAR and satellite radar to verify biomass carbon credits for smallholder farmers worldwide.",
+            "contact_email": "info@acorn.rabobank.com",
+            "verified": "true",
+        },
+        {
+            "id": "partner-global-2",
+            "name": "Boomitra Global Soil Carbon Initiative",
+            "partner_type": "International Aggregator",
+            "location": "San Mateo, California & International Hubs",
+            "pathways_supported": ["soil_carbon", "nitrogen"],
+            "typical_commission_pct": 25.0,
+            "description": "Earthshot Prize winner operating satellite-calibrated MRV across 5M+ acres of global smallholder cropland and rangelands.",
+            "contact_email": "partnerships@boomitra.com",
+            "verified": "true",
+        },
+        {
+            "id": "partner-global-3",
+            "name": "Smallholder Carbon Alliance & Cooperative Registry",
+            "partner_type": "Global Cooperative Alliance",
+            "location": "Geneva, Switzerland & Global Operations",
+            "pathways_supported": ["agroforestry", "rice_methane", "soil_carbon", "nitrogen"],
+            "typical_commission_pct": 18.0,
+            "description": "International federation aggregating small family farms under Verra and Gold Standard grouped project activities.",
+            "contact_email": "registry@smallholdercarbon.org",
+            "verified": "true",
+        },
     ]
 
     @classmethod

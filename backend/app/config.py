@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import List
+from typing import List, Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -10,7 +10,11 @@ class Settings(BaseSettings):
     PORT: int = 8000
     HOST: str = "0.0.0.0"
     VERSION: str = "3.2.0"
-    DEFAULT_REGION: str = "Kerala, India"
+    DEFAULT_REGION: str = "Global (NASA Earth Observations)"
+
+    # Optional AI LLM API Keys (zero-paid fallback works locally if unset)
+    GEMINI_API_KEY: Optional[str] = None
+    OPENAI_API_KEY: Optional[str] = None
 
     # Database
     # Defaults to local SQLite in data directory; can be set to PostgreSQL+PostGIS in .env

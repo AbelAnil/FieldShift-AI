@@ -19,16 +19,14 @@ services:
     volumes:
       - ./data:/app/data
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        # No reverse proxy in this dev stack, so point the browser at the backend port directly.
+        NEXT_PUBLIC_API_URL: http://localhost:8000
     container_name: fieldshift-frontend
     ports:
       - "3000:3000"

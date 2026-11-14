@@ -1,0 +1,62 @@
+# FieldShift AI: production stack that pulls prebuilt images from GHCR.
+#   cp .env.example .env   # then edit
+#   docker compose up -d
+# Then expose the proxy with Tailscale:  tailscale funnel ${PROXY_PORT:-8080}
+
+name: fieldshift
+
+services:
+  backend:
+    image: ghcr.io/abelanil/fieldshift-ai-backend:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      APP_ENV: production
+      DEBUG: "False"
+      HOST: 0.0.0.0
+      PORT: 8000
+    volumes:
+      - backend-data:/app/data
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+
+  frontend:
+    image: ghcr.io/abelanil/fieldshift-ai-frontend:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - frontend
+    ports:
+      - "${PROXY_BIND:-127.0.0.1}:${PROXY_PORT:-8080}:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+  watchtower:
+    # Maintained fork; the original containrrr/watchtower is archived and fails on Docker 29+.
+    image: nickfedor/watchtower:latest
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      WATCHTOWER_LABEL_ENABLE: "true"   # only update containers labelled above
+      WATCHTOWER_POLL_INTERVAL: ${WATCHTOWER_POLL_INTERVAL:-300}
+      WATCHTOWER_CLEANUP: "true"        # remove old images after updating
+      WATCHTOWER_INCLUDE_RESTARTING: "true"
+      TZ: ${TZ:-UTC}
+
+volumes:
+  backend-data:
+  caddy-data:
+  caddy-config:

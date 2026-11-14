@@ -25,7 +25,8 @@ NASA Earth Data → Environmental Analysis → Farm Digital Twin → Crop Suitab
 | **Phase 7** | AI Farm Assistant | ✅ Complete | Multilingual conversational advisor with STT/TTS, topic sessions, KAU/ICAR tool-calling |
 | **Phase 8** | Tasks & Decision Dossiers | ✅ Complete | Condition-based alert engine, interactive task manager, printable markdown farm dossiers |
 | **Phase 9** | Carbon Credit Module | ✅ Complete | Eligibility screener, conservative yield model, evidence ledger, FPO aggregator packs |
-| **Phase 10** | Deployment & Edge Readiness | 🚀 Ready | Local-first architecture, SQLite default / PostgreSQL-ready, Raspberry Pi edge evaluation |
+| **Phase 10** | Integrated Farming System (IFS) | 🚀 Specified | Livestock (THI index), Farm Pond Fish, Rice-Duck/Poultry, and Beekeeping (+25% pollination) |
+| **Phase 11** | Deployment & Edge Readiness | 🚀 Ready | Local-first architecture, SQLite default / PostgreSQL-ready, Raspberry Pi edge evaluation |
 
 ---
 
@@ -143,6 +144,24 @@ A conversational farm advisor powered by deterministic tool-calling against live
 - Aggregator fee deductions transparently shown
 - Evidence ledger tracking for audit readiness
 - **FPO (Farmer Producer Organization) aggregation packs** for smallholders (1–3 acres) who need collective pooling
+
+### 🐄 Integrated Farming System (IFS) — Livestock, Aquaculture & Beekeeping
+
+- **Dairy & Cattle Husbandry Engine:**
+  - Manure-to-biogas bio-slurry loop yielding 3.5–4.5 tons of Farm Yard Manure (FYM)/year per cow, displacing 60–80% of synthetic NPK.
+  - **NASA POWER Livestock Heat Stress Monitor (THI):** Real-time Temperature-Humidity Index calculation alerting farmers to heat stress ($THI \ge 74$) to protect milk yield and animal welfare.
+  - Bund fodder grass sizing (Hybrid Napier CO-5) along boundaries without consuming arable food crop acreage.
+- **Farm Pond Rainwater Catchment & Aquaculture:**
+  - Sizes rainwater retention basins using live NASA GPM IMERG 30-day precipitation (>1.4 million liters harvested per 2 acres).
+  - Species modeling: Composite Carp culture (Catla, Rohu, Mrigal), Pearlspot (*Karimeen*), and GIFT Tilapia.
+  - Pokkali organic rice-fish/prawn rotation modeling for floodplains and coastal wetlands.
+- **Poultry & Duck Mutualism:**
+  - Rice-Duck biological pest control: ducks feed on brown planthoppers, leaf folders, and weeds while aerating root water.
+  - Deep-litter poultry manure providing high-phosphorus organic top-dressing for banana and black pepper.
+- **Apiculture (Bee Farming) & Pollination Synergy:**
+  - Indian Honey Bee (*Apis cerana*) and Stingless Bee (*Tetragonula iridipennis* / *Cheruthen*).
+  - Cross-pollination multiplier: **+20% to +35% fruit/seed set** on nutmeg, cashew, coffee, coconut, and vegetables.
+  - High-value medicinal honey revenue modeling (₹1,500–₹2,500/kg).
 
 ### 📱 Mobile-First Responsive UI
 

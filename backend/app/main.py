@@ -1,9 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
+from app.database import engine, Base
+from app.models import User, Farm, Field
 from app.api.routes import api_router
 
 settings = get_settings()
+
+# Create tables if not existing
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -50,4 +55,3 @@ if __name__ == "__main__":
         port=settings.PORT,
         reload=settings.DEBUG,
     )
-

@@ -12,7 +12,16 @@ class Settings(BaseSettings):
     VERSION: str = "0.1.0"
     DEFAULT_REGION: str = "Kerala, India"
 
-    # Comma-separated or list of allowed origins
+    # Database
+    # Defaults to local SQLite in data directory; can be set to PostgreSQL+PostGIS in .env
+    DATABASE_URL: str = "sqlite:///./data/fieldshift.db"
+
+    # Security & JWT
+    SECRET_KEY: str = "fieldshift-secret-key-change-in-production-2026"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
+
+    # CORS Settings (comma-separated origins)
     CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
 
     model_config = SettingsConfigDict(
@@ -29,4 +38,3 @@ class Settings(BaseSettings):
 @lru_cache()
 def get_settings() -> Settings:
     return Settings()
-
